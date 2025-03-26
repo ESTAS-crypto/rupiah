@@ -1,5 +1,5 @@
 <?php
-require_once 'config/config.php';
+require_once '../config/config.php';
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
@@ -82,7 +82,7 @@ if (isset($_POST['verify'])) {
 <head>
     <title>Lupa Password - Manajemen Keuangan</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" type="text/css" href="css/register.css">
+    <link rel="stylesheet" type="text/css" href="../css/register.css">
     <link rel="icon" href="uploads/iconLogo.png" type="jpg/png" />
 </head>
 
@@ -105,7 +105,7 @@ if (isset($_POST['verify'])) {
                 <button type="submit" name="verify" class="btn">Lanjutkan</button>
             </div>
         </form>
-        <p><a href="login.php">Kembali ke Login</a></p>
+        <p><a href="../login.php">Kembali ke Login</a></p>
     </div>
 </body>
 

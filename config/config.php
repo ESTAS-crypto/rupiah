@@ -32,14 +32,14 @@ function requireLogin() {
 
 function redirectIfLoggedIn() {
     if (isLoggedIn()) {
-        header("Location: /rupiah/dashboard.php");
+        header("Location: /rupiah/dashboard/dashboard.php");
         exit();
     }
 }
 
 function checkSessionTimeout() {
     startSession();
-    $timeout = 1800; // 30 menit
+    $timeout = 100; // 30 menit
     if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity'] > $timeout)) {
         session_unset();
         session_destroy();

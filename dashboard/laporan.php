@@ -2,8 +2,8 @@
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
-require_once 'config/config.php';
-require_once 'config/auth_check.php';
+require_once '../config/config.php';
+require_once '../config/auth_check.php';
 
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
@@ -232,16 +232,16 @@ if (isset($_POST['export']) && $_POST['export'] === 'excel') {
     <title>Laporan - Manajemen Keuangan</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="stylesheet" href="css/dashboard.css">
-    <link rel="stylesheet" href="css/laporan.css">
-    <link rel="icon" href="uploads/iconLogo.png" type="jpg/png" />
+    <link rel="stylesheet" href="../css/dashboard.css">
+    <link rel="stylesheet" href="../css/laporan.css">
+    <link rel="icon" href="../uploads/iconLogo.png" type="jpg/png" />
 </head>
 
 <body>
     <div class="sidebar">
         <div class="profile">
             <a href="profile.php">
-                <img src="<?php echo !empty($user['foto_profil']) ? './uploads/profil/' . $user['foto_profil'] : './images/default-profil.png'; ?>"
+                <img src="<?php echo !empty($user['foto_profil']) ? '../uploads/profil/' . $user['foto_profil'] : './images/default-profil.png'; ?>"
                     alt="Profile">
             </a>
             <h3><?php echo htmlspecialchars($user['nama_lengkap']) . ' (' . ucfirst($user['role']) . ') ' . getRoleIcon($user['role']); ?>
@@ -261,12 +261,12 @@ if (isset($_POST['export']) && $_POST['export'] === 'excel') {
                 <?php echo basename($_SERVER['PHP_SELF']) == 'laporan.php' ? 'class="active"' : ''; ?>><i
                     class="fas fa-chart-bar"></i> Laporan</a>
             <?php if (in_array(strtolower($user['role']), ['admin', 'coder', 'owner'])): ?>
-            <a href="approve_reset.php"
+            <a href="../admin/approve_reset.php"
                 <?php echo basename($_SERVER['PHP_SELF']) == 'approve_reset.php' ? 'class="active"' : ''; ?>><i
                     class="fas fa-check-circle"></i> Persetujuan Reset</a>
             <?php endif; ?>
             <?php if (in_array(strtolower($user['role']), ['coder', 'owner'])): ?>
-            <a href="manage_users.php"
+            <a href="../admin/manage_users.php"
                 <?php echo basename($_SERVER['PHP_SELF']) == 'manage_users.php' ? 'class="active"' : ''; ?>><i
                     class="fas fa-users-cog"></i> Manajemen Pengguna</a>
             <?php endif; ?>

@@ -75,7 +75,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $_SESSION['nama_lengkap'] = $user['nama_lengkap'];
                         $_SESSION['role'] = $user['role'];
                         $_SESSION['last_activity'] = time();
-                        header("Location: dashboard.php");
+                        header("Location: loading.php");
                         exit();
                     }
                 } else {
@@ -133,7 +133,8 @@ unset($_SESSION['register_success'], $_SESSION['registered_username']);
             <div class="form-group">
                 <button type="submit" class="btn">Login</button>
             </div>
-            <p><a href="forgot_username.php">Lupa Username?</a> | <a href="forgot_password.php">Lupa Password?</a></p>
+            <p><a href="ForgotPw/forgot_username.php">Lupa Username?</a> | <a href="ForgotPw/forgot_password.php">Lupa
+                    Password?</a></p>
             <p>Belum punya akun? <a href="register.php">Register di sini</a></p>
         </form>
     </div>

@@ -1,5 +1,5 @@
 <?php
-require_once 'config/config.php';
+require_once '../config/config.php';
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
@@ -71,7 +71,7 @@ if (isset($_POST['reset'])) {
 <head>
     <title>Reset Password - Manajemen Keuangan</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" type="text/css" href="css/styles.css">
+    <link rel="stylesheet" type="text/css" href="../css/styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="icon" href="uploads/iconLogo.png" type="jpg/png" />
     <style>
@@ -130,7 +130,7 @@ if (isset($_POST['reset'])) {
                 <button type="submit" name="reset" class="btn">Atur Ulang Kata Sandi</button>
             </div>
         </form>
-        <p><a href="login.php">Kembali ke Login</a></p>
+        <p><a href="../login.php">Kembali ke Login</a></p>
     </div>
 
     <script>

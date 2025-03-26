@@ -71,7 +71,7 @@ $_SESSION['loading_shown'] = true;
 
     // Redirect ke dashboard setelah loading
     setTimeout(() => {
-        window.location.href = 'dashboard.php';
+        window.location.href = 'dashboard/dashboard.php';
     }, 5500);
     </script>
 </body>

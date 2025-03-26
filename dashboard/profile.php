@@ -1,5 +1,5 @@
 <?php
-require_once 'config/config.php';
+require_once '../config/config.php';
 session_start();
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
@@ -25,7 +25,7 @@ $default_image = './images/default-profil.png';
 $profil_image = $default_image;
 
 if (!empty($user['foto_profil'])) {
-    $custom_image = './uploads/profil/' . $user['foto_profil'];
+    $custom_image = '../uploads/profil/' . $user['foto_profil'];
     if (file_exists($custom_image)) {
         $profil_image = $custom_image;
     }
@@ -44,7 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
         
         if (in_array($ext, $allowed)) {
-            $upload_dir = './uploads/profil/';
+            $upload_dir = '../uploads/profil/';
             if (!file_exists($upload_dir)) {
                 mkdir($upload_dir, 0777, true);
             }
@@ -100,7 +100,7 @@ if (isset($_FILES['foto_profil'])) {
     <title>Profil - Manajemen Keuangan</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" type="text/css" href="./css/styles.css">
+    <link rel="stylesheet" type="text/css" href="../css/styles.css">
 
 
 </head>
@@ -108,7 +108,7 @@ if (isset($_FILES['foto_profil'])) {
 <body>
     <div class="sidebar">
         <div class="menu">
-            <a href="dashboard.php" class="keluar-btn"><i class="fas fa-sign-out-alt"></i>Logout</a>
+            <a href="../dashboard/dashboard.php" class="keluar-btn"><i class="fas fa-sign-out-alt"></i>Logout</a>
         </div>
     </div>
 

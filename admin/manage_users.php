@@ -1,5 +1,5 @@
 <?php
-require_once 'config/config.php';
+require_once '../config/config.php';
 
 // Set zona waktu agar konsisten
 date_default_timezone_set('Asia/Jakarta');
@@ -230,9 +230,9 @@ function getRoleIcon($role) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manajemen Pengguna</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <link rel="stylesheet" href="css/dashboard.css">
-    <link rel="stylesheet" href="css/manage_users.css">
-    <link rel="icon" href="uploads/iconLogo.png" type="jpg/png" />
+    <link rel="stylesheet" href="../css/dashboard.css">
+    <link rel="stylesheet" href="../css/manage_users.css">
+    <link rel="icon" href="../uploads/iconLogo.png" type="jpg/png" />
     <style>
     .content-wrapper {
         margin-left: 250px;
@@ -346,25 +346,26 @@ function getRoleIcon($role) {
     <div class="sidebar">
         <div class="profile">
             <a href="profile.php">
-                <img src="<?php echo $user['foto_profil'] ? './uploads/profil/' . $user['foto_profil'] : './images/default-profil.png'; ?>"
+                <img src="<?php echo $user['foto_profil'] ? '../uploads/profil/' . $user['foto_profil'] : './images/default-profil.png'; ?>"
                     alt="Profile">
             </a>
             <h3><?php echo htmlspecialchars($user['nama_lengkap']) . ' (' . ucfirst($role) . ') ' . getRoleIcon($role); ?>
             </h3>
         </div>
         <div class="menu">
-            <a href="dashboard.php"
+            <a href="../dashboard/dashboard.php"
                 <?php echo basename($_SERVER['PHP_SELF']) == 'dashboard.php' ? 'class="active"' : ''; ?>><i
                     class="fas fa-home"></i> Dashboard</a>
-            <a href="katagori.php"
+            <a href="../dashboard/katagori.php"
                 <?php echo basename($_SERVER['PHP_SELF']) == 'katagori.php' ? 'class="active"' : ''; ?>
                 <?php echo !$can_access_features ? 'class="disabled-link"' : ''; ?>><i class="fas fa-tags"></i>
                 Kategori</a>
-            <a href="transaksi.php"
+            <a href="../dashboard/transaksi.php"
                 <?php echo basename($_SERVER['PHP_SELF']) == 'transaksi.php' ? 'class="active"' : ''; ?>
                 <?php echo !$can_access_features ? 'class="disabled-link"' : ''; ?>><i class="fas fa-exchange-alt"></i>
                 Transaksi</a>
-            <a href="laporan.php" <?php echo basename($_SERVER['PHP_SELF']) == 'laporan.php' ? 'class="active"' : ''; ?>
+            <a href="../dashboard/laporan.php"
+                <?php echo basename($_SERVER['PHP_SELF']) == 'laporan.php' ? 'class="active"' : ''; ?>
                 <?php echo !$can_access_features ? 'class="disabled-link"' : ''; ?>><i class="fas fa-chart-bar"></i>
                 Laporan</a>
             <?php if (in_array($user['role'], ['admin', 'coder', 'owner'])): ?>

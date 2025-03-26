@@ -2,7 +2,7 @@
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
-require_once 'config/config.php';
+require_once '../config/config.php';
 
 // Set timezone agar waktu PHP dan MySQL sinkron (sesuaikan dengan zona waktu Anda)
 date_default_timezone_set('Asia/Jakarta');
@@ -167,8 +167,8 @@ if (!$approved_result) {
     <title>Persetujuan Reset Password - Admin/Coder/Owner</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <link rel="stylesheet" type="text/css" href="css/approve.css">
-    <link rel="icon" href="uploads/iconLogo.png" type="jpg/png" />
+    <link rel="stylesheet" type="text/css" href="../css/approve.css">
+    <link rel="icon" href="../uploads/iconLogo.png" type="jpg/png" />
     <style>
     body {
         font-family: 'Inter', sans-serif;
@@ -278,37 +278,37 @@ if (!$approved_result) {
     <div class="sidebar">
         <div class="profile">
             <a href="profile.php">
-                <img src="<?php echo !empty($user['foto_profil']) ? './uploads/profil/' . htmlspecialchars($user['foto_profil']) : './images/default-profil.png'; ?>"
+                <img src="<?php echo !empty($user['foto_profil']) ? '../uploads/profil/' . htmlspecialchars($user['foto_profil']) : './images/default-profil.png'; ?>"
                     alt="Profile">
             </a>
             <h3><?php echo htmlspecialchars($user['nama_lengkap']) . ' (' . ucfirst($user['role']) . ') ' . getRoleIcon($user['role']); ?>
             </h3>
         </div>
         <div class="menu">
-            <a href="dashboard.php"
+            <a href="../dashboard/dashboard.php"
                 <?php echo basename($_SERVER['PHP_SELF']) == 'dashboard.php' ? 'class="active"' : ''; ?>><i
                     class="fas fa-home"></i> Dashboard</a>
-            <a href="katagori.php"
+            <a href="../dashboard/katagori.php"
                 <?php echo basename($_SERVER['PHP_SELF']) == 'katagori.php' ? 'class="active"' : ''; ?>><i
                     class="fas fa-tags"></i> Kategori</a>
-            <a href="transaksi.php"
+            <a href="../dashboard/transaksi.php"
                 <?php echo basename($_SERVER['PHP_SELF']) == 'transaksi.php' ? 'class="active"' : ''; ?>><i
                     class="fas fa-exchange-alt"></i> Transaksi</a>
-            <a href="laporan.php"
+            <a href="../dashboard/laporan.php"
                 <?php echo basename($_SERVER['PHP_SELF']) == 'laporan.php' ? 'class="active"' : ''; ?>><i
                     class="fas fa-chart-bar"></i> Laporan</a>
             <?php if (in_array(strtolower($user['role']), ['admin', 'coder', 'owner'])): ?>
-            <a href="approve_reset.php"
+            <a href="../admin/approve_reset.php"
                 <?php echo basename($_SERVER['PHP_SELF']) == 'approve_reset.php' ? 'class="active"' : ''; ?>><i
                     class="fas fa-check-circle"></i> Persetujuan Reset</a>
             <?php endif; ?>
             <?php if (in_array(strtolower($user['role']), ['coder', 'owner'])): ?>
-            <a href="manage_users.php"
+            <a href="../admin/manage_users.php"
                 <?php echo basename($_SERVER['PHP_SELF']) == 'manage_users.php' ? 'class="active"' : ''; ?>><i
                     class="fas fa-users-cog"></i> Manajemen Pengguna</a>
             <?php endif; ?>
         </div>
-        <a href="logout.php" class="btn logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        <a href="../logout.php" class="btn logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
     </div>
 
     <div class="container">

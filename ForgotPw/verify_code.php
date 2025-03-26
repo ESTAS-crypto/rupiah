@@ -1,5 +1,5 @@
 <?php
-require_once 'config/config.php';
+require_once '../config/config.php';
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
@@ -56,7 +56,7 @@ if (isset($_POST['verify_code'])) {
 <head>
     <title>Verifikasi Kode - Manajemen Keuangan</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" type="text/css" href="css/styles.css">
+    <link rel="stylesheet" type="text/css" href="../css/styles.css">
     <link rel="icon" href="uploads/iconLogo.png" type="jpg/png" />
 </head>
 
