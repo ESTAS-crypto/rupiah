@@ -372,7 +372,6 @@ $transaksi_result = mysqli_stmt_get_result($stmt);
             .then(data => {
                 if (data.error) {
                     alert('Gagal mengambil data transaksi: ' + data.error);
-                    // Jika sesi tidak valid, arahkan ke halaman login
                     if (data.error === 'Unauthorized' && data.redirect) {
                         window.location.href = data.redirect;
                     }
