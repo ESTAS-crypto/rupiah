@@ -1,9 +1,14 @@
+/* Reset default styles */
+
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
     font-family: 'Inter', sans-serif;
 }
+
+
+/* Body styles */
 
 body {
     min-height: 100vh;
@@ -14,6 +19,9 @@ body {
     padding: 20px;
 }
 
+
+/* Container styles */
+
 .container {
     background: white;
     padding: 40px;
@@ -23,7 +31,83 @@ body {
     max-width: 1000px;
     position: relative;
     overflow: hidden;
+    margin-left: 270px;
+    /* Sesuaikan dengan lebar sidebar */
 }
+
+
+/* Sidebar styles */
+
+.sidebar {
+    width: 250px;
+    background: #2c3e50;
+    color: white;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    padding: 20px;
+}
+
+
+/* Profile styles */
+
+.sidebar .profile {
+    text-align: center;
+    padding: 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sidebar .profile img {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    margin-bottom: 10px;
+}
+
+.sidebar .profile h3 {
+    margin: 10px 0;
+}
+
+
+/* Menu styles */
+
+.sidebar .menu a {
+    display: block;
+    padding: 10px;
+    color: white;
+    text-decoration: none;
+    margin-bottom: 10px;
+}
+
+.sidebar .menu a.active {
+    background: #34495e;
+    border-radius: 5px;
+}
+
+.sidebar .menu a i {
+    margin-right: 10px;
+}
+
+
+/* Logout button */
+
+.sidebar .logout-btn {
+    display: block;
+    padding: 10px;
+    background: #e74c3c;
+    color: white;
+    text-align: center;
+    text-decoration: none;
+    border-radius: 5px;
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    right: 20px;
+}
+
+
+/* Container pseudo-element */
 
 .container::before {
     content: '';
@@ -35,6 +119,9 @@ body {
     background: linear-gradient(90deg, #2ecc71, #27ae60);
 }
 
+
+/* Heading styles */
+
 h2 {
     color: #1a3a54;
     text-align: center;
@@ -42,6 +129,9 @@ h2 {
     font-size: 28px;
     font-weight: 700;
 }
+
+
+/* Button styles */
 
 .btn {
     padding: 10px 16px;
@@ -74,6 +164,9 @@ h2 {
     box-shadow: 0 4px 12px rgba(231, 76, 60, 0.2);
 }
 
+
+/* Alert styles */
+
 .alert {
     padding: 14px;
     border-radius: 8px;
@@ -93,6 +186,9 @@ h2 {
     color: #2e7d32;
     border: 1px solid #c8e6c9;
 }
+
+
+/* Table styles */
 
 .table {
     width: 100%;
@@ -120,69 +216,8 @@ h2 {
     font-size: 14px;
 }
 
-.sidebar {
-    width: 250px;
-    background: #2c3e50;
-    color: white;
-    height: 100vh;
-    position: fixed;
-    top: 0;
-    left: 0;
-    padding: 20px;
-}
 
-.sidebar .profile {
-    text-align: center;
-    padding: 20px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.sidebar .profile img {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    margin-bottom: 10px;
-}
-
-.sidebar .profile h3 {
-    margin: 10px 0;
-}
-
-.sidebar .menu a {
-    display: block;
-    padding: 10px;
-    color: white;
-    text-decoration: none;
-    margin-bottom: 10px;
-}
-
-.sidebar .menu a.active {
-    background: #34495e;
-    border-radius: 5px;
-}
-
-.sidebar .menu a i {
-    margin-right: 10px;
-}
-
-.sidebar .logout-btn {
-    display: block;
-    padding: 10px;
-    background: #e74c3c;
-    color: white;
-    text-align: center;
-    text-decoration: none;
-    border-radius: 5px;
-    position: absolute;
-    bottom: 20px;
-    left: 20px;
-    right: 20px;
-}
-
-.container {
-    margin-left: 270px;
-    padding: 20px;
-}
+/* Copy button */
 
 .copy-btn {
     background: #3498db;
@@ -199,8 +234,83 @@ h2 {
     background: #2980b9;
 }
 
+
+/* Role icon */
+
 .role-icon {
     font-size: 16px;
     margin-left: 5px;
     vertical-align: middle;
+}
+
+
+/* Media Queries for Responsiveness */
+
+@media (max-width: 1024px) {
+    .sidebar {
+        width: 200px;
+    }
+    .container {
+        margin-left: 220px;
+        width: calc(100% - 240px);
+    }
+}
+
+@media (max-width: 768px) {
+    .sidebar {
+        width: 60px;
+    }
+    .sidebar .profile,
+    .sidebar .menu a span {
+        display: none;
+    }
+    .sidebar .menu a {
+        padding: 15px;
+        text-align: center;
+    }
+    .sidebar .menu a i {
+        margin-right: 0;
+    }
+    .container {
+        margin-left: 80px;
+        width: calc(100% - 100px);
+        padding: 15px;
+    }
+    .table {
+        font-size: 12px;
+    }
+    .table th,
+    .table td {
+        padding: 8px;
+    }
+}
+
+@media (max-width: 480px) {
+    .sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+        padding: 10px 0;
+    }
+    .container {
+        margin-left: 0;
+        width: 100%;
+        padding: 10px;
+    }
+    .table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+    .table th,
+    .table td {
+        padding: 6px;
+    }
+    .btn {
+        padding: 8px 12px;
+        font-size: 12px;
+    }
+    h2 {
+        font-size: 24px;
+    }
 }
