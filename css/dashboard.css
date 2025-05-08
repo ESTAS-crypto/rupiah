@@ -1,3 +1,5 @@
+/* Root variables */
+
 :root {
     --primary-color: #2c3e50;
     --secondary-color: #34495e;
@@ -8,6 +10,9 @@
     --danger-color: #c0392b;
     --white: #ffffff;
 }
+
+
+/* Reset default styles */
 
 * {
     margin: 0;
@@ -20,6 +25,9 @@ body {
     background: var(--light-gray);
     color: var(--secondary-color);
 }
+
+
+/* Sidebar styles */
 
 .sidebar {
     position: fixed;
@@ -64,13 +72,20 @@ body {
     width: 20px;
 }
 
+
+/* Main content styles */
+
 .main-content {
     margin-left: 250px;
     padding: 30px;
 }
 
+
+/* Header styles */
+
 .header {
-    background: var(--white);
+    background: #2c3e50;
+    color: #ffffff;
     padding: 20px;
     border-radius: 10px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
@@ -78,10 +93,17 @@ body {
 }
 
 .header h1 {
-    color: var(--primary-color);
+    color: var(--white);
     font-size: 24px;
     margin-bottom: 10px;
 }
+
+.header-left p {
+    color: whitesmoke;
+}
+
+
+/* Summary cards */
 
 .summary-cards {
     display: grid;
@@ -122,6 +144,9 @@ body {
     color: var(--danger-color);
 }
 
+
+/* Recent transactions */
+
 .recent-transactions {
     background: var(--white);
     padding: 25px;
@@ -149,10 +174,6 @@ body {
     font-weight: bold;
 }
 
-.header-left p {
-    color: whitesmoke;
-}
-
 .transaction-list td {
     padding: 15px;
     border-bottom: 1px solid var(--light-gray);
@@ -162,6 +183,9 @@ body {
 .transaction-list tr:hover {
     background: rgba(236, 240, 241, 0.3);
 }
+
+
+/* Buttons */
 
 .btn {
     display: inline-block;
@@ -184,6 +208,14 @@ body {
     background: #d35400;
 }
 
+.btn-success {
+    background: var(--success-color);
+}
+
+.btn-success:hover {
+    background: #219a52;
+}
+
 .logout-btn {
     position: absolute;
     bottom: 20px;
@@ -196,43 +228,108 @@ body {
     background: #a93226;
 }
 
-.header {
-    background: #2c3e50;
-    color: #ffffff;
-    padding: 20px;
+
+/* Media Queries for Responsiveness */
+
+@media (max-width: 1024px) {
+    .sidebar {
+        width: 200px;
+    }
+    .main-content {
+        margin-left: 200px;
+    }
+    .summary-cards {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }
 
-.card {
-    background: #ffffff;
-    padding: 25px;
-    margin-bottom: 20px;
+@media (max-width: 768px) {
+    .sidebar {
+        width: 60px;
+    }
+    .sidebar .profile,
+    .sidebar .menu span {
+        display: none;
+    }
+    .sidebar .menu a {
+        padding: 15px;
+        text-align: center;
+    }
+    .sidebar .menu i {
+        margin-right: 0;
+    }
+    .main-content {
+        margin-left: 60px;
+        padding: 20px;
+    }
+    .summary-cards {
+        grid-template-columns: 1fr;
+    }
+    .header {
+        padding: 15px;
+    }
+    .card {
+        padding: 15px;
+    }
+    .transaction-list th,
+    .transaction-list td {
+        padding: 10px;
+    }
+    .btn-group {
+        flex-direction: column;
+    }
 }
 
-.card-title {
-    color: #7f8c8d;
-    font-size: 16px;
-}
-
-.pemasukan {
-    color: #27ae60;
-}
-
-.pengeluaran {
-    color: #c0392b;
-}
-
-.transaction-list {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.transaction-list th {
-    background: #ecf0f1;
-    padding: 15px;
-    color: #2c3e50;
-}
-
-.transaction-list td {
-    padding: 15px;
-    border-bottom: 1px solid #ecf0f1;
+@media (max-width: 480px) {
+    .sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+        padding: 10px 0;
+    }
+    .sidebar .profile {
+        display: block;
+        padding: 10px;
+    }
+    .sidebar .profile img {
+        width: 60px;
+        height: 60px;
+    }
+    .sidebar .menu {
+        padding-top: 0;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    .sidebar .menu a {
+        padding: 10px;
+    }
+    .main-content {
+        margin-left: 0;
+        padding: 10px;
+    }
+    .header {
+        padding: 10px;
+    }
+    .header h1 {
+        font-size: 20px;
+    }
+    .card {
+        padding: 10px;
+    }
+    .card-amount {
+        font-size: 22px;
+    }
+    .transaction-list {
+        font-size: 12px;
+    }
+    .transaction-list th,
+    .transaction-list td {
+        padding: 8px;
+    }
+    .logout-btn {
+        position: static;
+        width: 100%;
+        margin: 10px 0;
+    }
 }

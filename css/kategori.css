@@ -48,7 +48,7 @@
 }
 
 
-/* Kategori specific styles */
+/* Kategori header */
 
 .kategori-header {
     display: flex;
@@ -218,35 +218,16 @@ th {
 }
 
 
-/* Table action buttons */
+/* Media Queries for Responsiveness */
 
-.action-buttons {
-    display: flex;
-    gap: 8px;
+@media (max-width: 1024px) {
+    .sidebar {
+        width: 200px;
+    }
+    .main-content {
+        margin-left: 200px;
+    }
 }
-
-
-/* Status badges */
-
-.badge {
-    padding: 5px 10px;
-    border-radius: 15px;
-    font-size: 12px;
-    font-weight: 500;
-}
-
-.badge-pemasukan {
-    background: #d4edda;
-    color: #155724;
-}
-
-.badge-pengeluaran {
-    background: #f8d7da;
-    color: #721c24;
-}
-
-
-/* Responsive design */
 
 @media (max-width: 768px) {
     .sidebar {
@@ -256,11 +237,16 @@ th {
     .sidebar .menu span {
         display: none;
     }
+    .sidebar .menu a {
+        padding: 15px;
+        text-align: center;
+    }
+    .sidebar .menu i {
+        margin-right: 0;
+    }
     .main-content {
         margin-left: 60px;
-    }
-    .modal-content {
-        width: 90%;
+        padding: 15px;
     }
     .kategori-header {
         flex-direction: column;
@@ -270,66 +256,51 @@ th {
         width: 100%;
         justify-content: center;
     }
+    .modal-content {
+        width: 90%;
+    }
+    table {
+        font-size: 14px;
+    }
+    th,
+    td {
+        padding: 10px;
+    }
 }
 
-
-/* Gaya untuk notifikasi sukses (transaksi berhasil dihapus) */
-
-.alert-success {
-    background-color: #d4edda;
-    /* Warna hijau muda */
-    color: #155724;
-    /* Warna teks hijau tua */
-    border: 1px solid #c3e6cb;
-    /* Border hijau */
-    padding: 10px;
-    /* Ruang dalam */
-    margin-bottom: 15px;
-    /* Jarak dari elemen di bawahnya */
-    border-radius: 4px;
-    /* Sudut membulat */
-}
-
-
-/* Gaya untuk notifikasi error (jika gagal menghapus) */
-
-.alert-danger {
-    background-color: #f8d7da;
-    /* Warna merah muda */
-    color: #721c24;
-    /* Warna teks merah tua */
-    border: 1px solid #f5c6cb;
-    /* Border merah */
-    padding: 10px;
-    /* Ruang dalam */
-    margin-bottom: 15px;
-    /* Jarak dari elemen di bawahnya */
-    border-radius: 4px;
-    /* Sudut membulat */
-}
-
-
-/* Gaya umum untuk semua notifikasi */
-
-.alert {
-    position: relative;
-    padding: 10px 15px;
-    margin-bottom: 15px;
-    border: 1px solid transparent;
-    border-radius: 4px;
-}
-
-
-/* Hover effects */
-
-tr:hover {
-    background-color: #f8f9fa;
-}
-
-.btn-tambah i {
-    transition: transform 0.3s;
-}
-
-.btn-tambah:hover i {
-    transform: rotate(90deg);
+@media (max-width: 480px) {
+    .sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+    }
+    .main-content {
+        margin-left: 0;
+        padding: 10px;
+    }
+    .kategori-header h1 {
+        font-size: 20px;
+    }
+    .btn-tambah {
+        padding: 8px 16px;
+    }
+    .modal-content {
+        padding: 15px;
+        width: 95%;
+    }
+    .form-group input,
+    .form-group select {
+        padding: 8px;
+        font-size: 12px;
+    }
+    table {
+        font-size: 12px;
+    }
+    th,
+    td {
+        padding: 8px;
+    }
+    .btn-hapus {
+        padding: 6px 10px;
+    }
 }

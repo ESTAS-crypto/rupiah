@@ -1,8 +1,13 @@
+/* Content wrapper */
+
 .content-wrapper {
     margin-left: 250px;
     padding: 20px;
     background-color: #f4f6f9;
 }
+
+
+/* Report container */
 
 .report-container {
     background: white;
@@ -11,6 +16,9 @@
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     margin-bottom: 20px;
 }
+
+
+/* Filter form */
 
 .filter-form {
     display: flex;
@@ -26,10 +34,16 @@
     border-radius: 4px;
 }
 
+
+/* Button group */
+
 .btn-group {
     display: flex;
     gap: 10px;
 }
+
+
+/* Buttons */
 
 .btn {
     padding: 8px 15px;
@@ -50,6 +64,9 @@
 .btn-warning {
     background: #f1c40f;
 }
+
+
+/* Summary cards */
 
 .summary-cards {
     display: grid;
@@ -83,6 +100,9 @@
     color: #e74c3c;
 }
 
+
+/* Chart container */
+
 .chart-container {
     margin-bottom: 20px;
     padding: 20px;
@@ -90,6 +110,9 @@
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
+
+
+/* Table container */
 
 .table-container {
     overflow-x: auto;
@@ -112,14 +135,77 @@
     font-weight: bold;
 }
 
+
+/* Media Queries for Responsiveness */
+
+@media (max-width: 1024px) {
+    .content-wrapper {
+        margin-left: 200px;
+    }
+    .summary-cards {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
 @media (max-width: 768px) {
     .content-wrapper {
-        margin-left: 0;
+        margin-left: 60px;
+        padding: 15px;
+    }
+    .report-container {
+        padding: 15px;
     }
     .filter-form {
         flex-direction: column;
     }
+    .filter-form input,
+    .filter-form select {
+        width: 100%;
+    }
+    .btn-group {
+        flex-direction: column;
+    }
     .summary-cards {
         grid-template-columns: 1fr;
+    }
+    .chart-container {
+        padding: 15px;
+    }
+    .data-table th,
+    .data-table td {
+        padding: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .content-wrapper {
+        margin-left: 0;
+        padding: 10px;
+    }
+    .report-container {
+        padding: 10px;
+    }
+    .filter-form input,
+    .filter-form select {
+        padding: 6px;
+        font-size: 12px;
+    }
+    .btn {
+        padding: 6px 12px;
+        font-size: 14px;
+    }
+    .card {
+        padding: 15px;
+    }
+    .card-amount {
+        font-size: 20px;
+    }
+    .chart-container {
+        padding: 10px;
+    }
+    .data-table th,
+    .data-table td {
+        padding: 8px;
+        font-size: 12px;
     }
 }

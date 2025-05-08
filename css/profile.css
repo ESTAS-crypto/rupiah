@@ -1,3 +1,5 @@
+/* Profile card styles */
+
 .profile-card {
     background: white;
     padding: 30px;
@@ -39,17 +41,6 @@
 
 .profile-image:hover .image-overlay {
     opacity: 1;
-}
-
-.keluar-btn {
-    color: #2ecc71;
-    text-decoration: none;
-    font-weight: 600;
-    transition: color 0.3s ease;
-    position: relative;
-    top: -18.6rem;
-    left: 24rem;
-    z-index: 2;
 }
 
 .edit-image-btn {
@@ -128,4 +119,65 @@
     background: #f8d7da;
     color: #721c24;
     border: 1px solid #f5c6cb;
+}
+
+.keluar-btn {
+    color: #2ecc71;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s ease;
+    position: relative;
+    top: -18.6rem;
+    left: 24rem;
+    z-index: 2;
+}
+
+
+/* Media Queries for Responsiveness */
+
+@media (max-width: 768px) {
+    .profile-card {
+        padding: 20px;
+        max-width: 100%;
+    }
+    .profile-image {
+        width: 120px;
+        height: 120px;
+    }
+    .form-group input {
+        padding: 10px;
+    }
+    .btn {
+        padding: 10px;
+    }
+    .keluar-btn {
+        top: -1rem;
+        left: 0;
+        display: block;
+        text-align: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .profile-card {
+        padding: 15px;
+    }
+    .profile-image {
+        width: 100px;
+        height: 100px;
+    }
+    .form-group label {
+        font-size: 14px;
+    }
+    .form-group input {
+        padding: 8px;
+        font-size: 12px;
+    }
+    .btn {
+        padding: 8px;
+        font-size: 14px;
+    }
+    .edit-image-btn i {
+        font-size: 20px;
+    }
 }

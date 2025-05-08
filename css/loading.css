@@ -20,6 +20,8 @@ html {
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
     position: relative;
     overflow: hidden;
+    width: 100%;
+    max-width: 400px;
 }
 
 .loading-container::before {
@@ -216,4 +218,60 @@ html {
     bottom: -20px;
     right: -20px;
     transform: rotate(135deg);
+}
+
+
+/* Media Queries untuk Responsivitas */
+
+@media (max-width: 768px) {
+    .loading-container {
+        padding: 30px;
+        max-width: 90%;
+    }
+    .loading-title {
+        font-size: 28px;
+    }
+    .loading-coin {
+        width: 80px;
+        height: 80px;
+        font-size: 24px;
+    }
+    .loading-text {
+        font-size: 16px;
+    }
+    .loading-bar {
+        width: 240px;
+    }
+    .loading-status {
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .loading-container {
+        padding: 20px;
+        max-width: 95%;
+    }
+    .loading-title {
+        font-size: 24px;
+        margin-bottom: 20px;
+    }
+    .loading-coin {
+        width: 60px;
+        height: 60px;
+        font-size: 20px;
+    }
+    .loading-text {
+        font-size: 14px;
+        margin: 20px 0;
+    }
+    .loading-bar {
+        width: 200px;
+    }
+    .loading-status {
+        font-size: 10px;
+    }
+    .loading-decoration {
+        font-size: 80px;
+    }
 }
