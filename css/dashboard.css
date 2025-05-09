@@ -26,6 +26,59 @@ body {
     color: var(--secondary-color);
 }
 
+.alert {
+    padding: 10px;
+    margin-bottom: 15px;
+    border-radius: 5px;
+}
+
+.alert-warning {
+    background: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeeba;
+}
+
+.disabled-link {
+    pointer-events: none;
+    opacity: 0.5;
+    text-decoration: line-through;
+}
+
+.timer {
+    font-weight: bold;
+    color: #c0392b;
+    margin-left: 10px;
+}
+
+#calculator-logo {
+    position: absolute;
+    cursor: move;
+    z-index: 1001;
+}
+
+#calculator-logo img {
+    width: 50px;
+    height: 50px;
+}
+
+#calculator-logo:hover {
+    transform: scale(1.1);
+    transition: transform 0.3s;
+}
+
+
+/* Global styles */
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: "Arial", sans-serif;
+    line-height: 1.6;
+    background: var(--light-gray);
+}
+
 
 /* Sidebar styles */
 

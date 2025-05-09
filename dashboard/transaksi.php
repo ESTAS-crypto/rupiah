@@ -206,12 +206,12 @@ $transaksi_result = mysqli_stmt_get_result($stmt);
                 <?php echo basename($_SERVER['PHP_SELF']) == 'laporan.php' ? 'class="active"' : ''; ?>><i
                     class="fas fa-chart-bar"></i> Laporan</a>
             <?php if (in_array(strtolower($user['role']), ['admin', 'coder', 'owner'])): ?>
-            <a href="<?php echo $base_url; ?>/dashboard/approve_reset.php"
+            <a href="<?php echo $base_url; ?>/admin/approve_reset.php"
                 <?php echo basename($_SERVER['PHP_SELF']) == 'approve_reset.php' ? 'class="active"' : ''; ?>><i
                     class="fas fa-check-circle"></i> Persetujuan Reset</a>
             <?php endif; ?>
             <?php if (in_array($user['role'], ['coder', 'owner'])): ?>
-            <a href="<?php echo $base_url; ?>/dashboard/manage_users.php"
+            <a href="<?php echo $base_url; ?>/admin/manage_users.php"
                 <?php echo basename($_SERVER['PHP_SELF']) == 'manage_users.php' ? 'class="active"' : ''; ?>><i
                     class="fas fa-users-cog"></i> Manajemen Pengguna</a>
             <?php endif; ?>
@@ -219,7 +219,12 @@ $transaksi_result = mysqli_stmt_get_result($stmt);
         <a href="<?php echo $base_url; ?>/dashboard/logout.php" class="btn logout-btn"><i
                 class="fas fa-sign-out-alt"></i> Logout</a>
     </div>
+    <div id="calculator-logo" style="position: absolute; cursor: move;">
+        <img src="../images/calculator.png?v=1" alt="Calculator" width="50" height="50"
+            onerror="this.src='./images/default-calculator.png';">
+    </div>
 
+    <?php include 'calcu.php'; ?>
     <div class="content-wrapper">
         <?php if (isset($_SESSION['success'])): ?>
         <div class="alert alert-success">
@@ -436,6 +441,66 @@ $transaksi_result = mysqli_stmt_get_result($stmt);
         const modal = document.getElementById('formModal');
         if (event.target === modal) closeModal();
     }
+    let isDraggingLogo = false;
+    let offsetXLogo, offsetYLogo;
+
+    const logo = document.getElementById('calculator-logo');
+
+    // Load saved position from localStorage
+    const savedLeft = localStorage.getItem('calculatorLeft');
+    const savedTop = localStorage.getItem('calculatorTop');
+    if (savedLeft && savedTop) {
+        logo.style.left = savedLeft + 'px';
+        logo.style.top = savedTop + 'px';
+    } else {
+        // Default position if no saved position
+        logo.style.left = '20px';
+        logo.style.top = '20px';
+    }
+
+    logo.addEventListener('mousedown', function(e) {
+        isDraggingLogo = true;
+        const rect = logo.getBoundingClientRect();
+        offsetXLogo = e.clientX - rect.left;
+        offsetYLogo = e.clientY - rect.top;
+    });
+
+    document.addEventListener('mousemove', function(e) {
+        if (isDraggingLogo) {
+            let newLeft = e.clientX - offsetXLogo;
+            let newTop = e.clientY - offsetYLogo;
+            const viewportWidth = window.innerWidth;
+            const viewportHeight = window.innerHeight;
+            const logoWidth = logo.offsetWidth;
+            const logoHeight = logo.offsetHeight;
+
+            if (newLeft < 0) newLeft = 0;
+            if (newTop < 0) newTop = 0;
+            if (newLeft + logoWidth > viewportWidth) newLeft = viewportWidth - logoWidth;
+            if (newTop + logoHeight > viewportHeight) newTop = viewportHeight - logoHeight;
+
+            logo.style.left = newLeft + 'px';
+            logo.style.top = newTop + 'px';
+        }
+    });
+
+    document.addEventListener('mouseup', function() {
+        if (isDraggingLogo) {
+            // Save the current position to localStorage
+            localStorage.setItem('calculatorLeft', logo.style.left.replace('px', ''));
+            localStorage.setItem('calculatorTop', logo.style.top.replace('px', ''));
+        }
+        isDraggingLogo = false;
+    });
+
+    logo.addEventListener('click', function() {
+        openCalculator();
+    });
+
+    // Fallback image if calculator.png fails to load
+    document.querySelector('#calculator-logo img').addEventListener('error', function() {
+        this.src = './images/default-calculator.png';
+    });
     </script>
 </body>
 

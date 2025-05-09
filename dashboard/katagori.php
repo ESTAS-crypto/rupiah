@@ -92,7 +92,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['tambah_kategori'])) {
         $error = $e->getMessage();
     }
 }
-// Fungsi untuk ikon berdasarkan role (diperbarui)
+
 function getRoleIcon($role) {
     $icons = ['owner' => 'crown', 'coder' => 'code', 'admin' => 'user-shield', 'user' => 'user'];
     return '<i class="fas fa-' . ($icons[strtolower($role)] ?? 'user') . '"></i>';
@@ -118,11 +118,10 @@ try {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" href="../css/dashboard.css">
     <link rel="stylesheet" href="../css/kategori.css">
-    <link rel="icon" href="../uploads/iconLogo.png" type="jpg/png" />
+    <link rel="icon" href="../uploads/iconLogo.png" type="image/png" />
 </head>
 
 <body>
-
     <div class="sidebar">
         <div class="profile">
             <a href="profile.php">
@@ -147,21 +146,24 @@ try {
                     class="fas fa-chart-bar"></i> Laporan</a>
             <?php if (in_array($user['role'], ['admin', 'coder', 'owner'])): ?>
             <a href="../admin/approve_reset.php"
-                <?php echo basename($_SERVER['PHP_SELF']) == 'approve_reset.php' ? 'class="active"' : ''; ?>
-                <?php echo !$can_access_features ? 'class="disabled-link"' : ''; ?>><i class="fas fa-check-circle"></i>
-                Persetujuan Reset</a>
+                <?php echo basename($_SERVER['PHP_SELF']) == 'approve_reset.php' ? 'class="active"' : ''; ?>><i
+                    class="fas fa-check-circle"></i> Persetujuan Reset</a>
             <?php endif; ?>
             <?php if (in_array($user['role'], ['coder', 'owner'])): ?>
             <a href="../admin/manage_users.php"
-                <?php echo basename($_SERVER['PHP_SELF']) == 'manage_users.php' ? 'class="active"' : ''; ?>
-                <?php echo !$can_access_features ? 'class="disabled-link"' : ''; ?>><i class="fas fa-users-cog"></i>
-                Manajemen Pengguna</a>
+                <?php echo basename($_SERVER['PHP_SELF']) == 'manage_users.php' ? 'class="active"' : ''; ?>><i
+                    class="fas fa-users-cog"></i> Manajemen Pengguna</a>
             <?php endif; ?>
         </div>
-        <a href="logout.php" class="btn logout-btn">
-            <i class="fas fa-sign-out-alt"></i> Logout
-        </a>
+        <a href="logout.php" class="btn logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
     </div>
+
+    <div id="calculator-logo" style="position: absolute; top: 20px; left: 20px; cursor: move;">
+        <img src="../images/calculator.png?v=1" alt="Calculator" width="50" height="50"
+            onerror="this.src='./images/default-calculator.png';">
+    </div>
+
+    <?php include 'calcu.php'; ?>
 
     <div class="main-content">
         <?php if (isset($_SESSION['success'])): ?>
@@ -255,6 +257,69 @@ try {
             closeModal();
         }
     }
+    </script>
+
+    <script>
+    let isDraggingLogo = false;
+    let offsetXLogo, offsetYLogo;
+
+    const logo = document.getElementById('calculator-logo');
+
+    // Load saved position from localStorage
+    const savedLeft = localStorage.getItem('calculatorLeft');
+    const savedTop = localStorage.getItem('calculatorTop');
+    if (savedLeft && savedTop) {
+        logo.style.left = savedLeft + 'px';
+        logo.style.top = savedTop + 'px';
+    } else {
+        // Default position if no saved position
+        logo.style.left = '20px';
+        logo.style.top = '20px';
+    }
+
+    logo.addEventListener('mousedown', function(e) {
+        isDraggingLogo = true;
+        const rect = logo.getBoundingClientRect();
+        offsetXLogo = e.clientX - rect.left;
+        offsetYLogo = e.clientY - rect.top;
+    });
+
+    document.addEventListener('mousemove', function(e) {
+        if (isDraggingLogo) {
+            let newLeft = e.clientX - offsetXLogo;
+            let newTop = e.clientY - offsetYLogo;
+            const viewportWidth = window.innerWidth;
+            const viewportHeight = window.innerHeight;
+            const logoWidth = logo.offsetWidth;
+            const logoHeight = logo.offsetHeight;
+
+            if (newLeft < 0) newLeft = 0;
+            if (newTop < 0) newTop = 0;
+            if (newLeft + logoWidth > viewportWidth) newLeft = viewportWidth - logoWidth;
+            if (newTop + logoHeight > viewportHeight) newTop = viewportHeight - logoHeight;
+
+            logo.style.left = newLeft + 'px';
+            logo.style.top = newTop + 'px';
+        }
+    });
+
+    document.addEventListener('mouseup', function() {
+        if (isDraggingLogo) {
+            // Save the current position to localStorage
+            localStorage.setItem('calculatorLeft', logo.style.left.replace('px', ''));
+            localStorage.setItem('calculatorTop', logo.style.top.replace('px', ''));
+        }
+        isDraggingLogo = false;
+    });
+
+    logo.addEventListener('click', function() {
+        openCalculator();
+    });
+
+    // Fallback image if calculator.png fails to load
+    document.querySelector('#calculator-logo img').addEventListener('error', function() {
+        this.src = './images/default-calculator.png';
+    });
     </script>
 </body>
 

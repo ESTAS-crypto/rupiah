@@ -39,7 +39,6 @@ try {
         } elseif (strtotime($user['ban_expiry']) > time()) {
             $_SESSION['error'] = "Akun Anda diban hingga " . date('d-m-Y H:i:s', strtotime($user['ban_expiry'])) . ". Silakan hubungi admin.";
         } else {
-            // Ban telah kadaluarsa, reset status (sudah dilakukan di checkAndClearExpiredSanctions)
             $_SESSION['success'] = "Status ban Anda telah dihapus karena waktu kadaluarsa telah tercapai.";
         }
         if (isset($_SESSION['error'])) {
@@ -48,7 +47,6 @@ try {
         }
     }
 
-    // Notifikasi peringatan
     $warning_count = $user['warning_count'];
     $warning_message = null;
     if ($warning_count > 0) {
@@ -66,58 +64,40 @@ try {
         }
     }
 
-    // Cek apakah pengguna bisa mengakses fitur tertentu
     $can_access_features = canAccessFeature($warning_count);
-
 } catch (Exception $e) {
     die("Error: " . $e->getMessage());
 }
 
 // Get summary untuk semua transaksi hingga hari ini (3 Maret 2025)
 try {
-    $today = date('Y-m-d'); // Mengambil tanggal saat ini: 2025-03-03
-    
-    // Total Pemasukan (semua transaksi hingga hari ini)
-    $pemasukan_query = "SELECT COALESCE(SUM(jumlah), 0) as total FROM transaksi 
-                       WHERE user_id = ? AND jenis_transaksi = 'pemasukan' 
-                       AND tanggal <= ?";
+    $today = date('Y-m-d');
+    $pemasukan_query = "SELECT COALESCE(SUM(jumlah), 0) as total FROM transaksi WHERE user_id = ? AND jenis_transaksi = 'pemasukan' AND tanggal <= ?";
     $stmt = mysqli_prepare($conn, $pemasukan_query);
     mysqli_stmt_bind_param($stmt, "is", $user_id, $today);
     mysqli_stmt_execute($stmt);
     $pemasukan_result = mysqli_stmt_get_result($stmt);
     $pemasukan = mysqli_fetch_assoc($pemasukan_result);
 
-    // Total Pengeluaran (semua transaksi hingga hari ini)
-    $pengeluaran_query = "SELECT COALESCE(SUM(jumlah), 0) as total FROM transaksi 
-                         WHERE user_id = ? AND jenis_transaksi = 'pengeluaran' 
-                         AND tanggal <= ?";
+    $pengeluaran_query = "SELECT COALESCE(SUM(jumlah), 0) as total FROM transaksi WHERE user_id = ? AND jenis_transaksi = 'pengeluaran' AND tanggal <= ?";
     $stmt = mysqli_prepare($conn, $pengeluaran_query);
     mysqli_stmt_bind_param($stmt, "is", $user_id, $today);
     mysqli_stmt_execute($stmt);
     $pengeluaran_result = mysqli_stmt_get_result($stmt);
     $pengeluaran = mysqli_fetch_assoc($pengeluaran_result);
 
-    // Hitung saldo
     $saldo = $pemasukan['total'] - $pengeluaran['total'];
 } catch (Exception $e) {
     die("Error: " . $e->getMessage());
 }
 
-// Fungsi untuk ikon berdasarkan role
 function getRoleIcon($role) {
     $icons = ['owner' => 'crown', 'coder' => 'code', 'admin' => 'user-shield', 'user' => 'user'];
     return '<i class="fas fa-' . ($icons[strtolower($role)] ?? 'user') . '"></i>';
 }
 
-
-// Get transaksi terakhir (semua transaksi hingga hari ini)
 try {
-    $transaksi_query = "SELECT t.*, k.nama_kategori 
-                       FROM transaksi t
-                       LEFT JOIN kategori k ON t.kategori_id = k.kategori_id
-                       WHERE t.user_id = ?
-                       AND t.tanggal <= ?
-                       ORDER BY t.tanggal DESC LIMIT 5";
+    $transaksi_query = "SELECT t.*, k.nama_kategori FROM transaksi t LEFT JOIN kategori k ON t.kategori_id = k.kategori_id WHERE t.user_id = ? AND t.tanggal <= ? ORDER BY t.tanggal DESC LIMIT 5";
     $stmt = mysqli_prepare($conn, $transaksi_query);
     mysqli_stmt_bind_param($stmt, "is", $user_id, $today);
     mysqli_stmt_execute($stmt);
@@ -126,28 +106,22 @@ try {
     die("Error: " . $e->getMessage());
 }
 
-// Export handling
 if (isset($_POST['export']) && $_POST['export'] === 'excel') {
     header('Content-Type: application/vnd.ms-excel');
-    header('Content-Disposition: attachment; filename=Dashboard_Keuangan_'.date('d-m-Y').'.xls');
+    header('Content-Disposition: attachment; filename=Dashboard_Keuangan_' . date('d-m-Y') . '.xls');
     header('Cache-Control: max-age=0');
     ?>
 <table border="1">
     <tr>
-        <th colspan="5" style="background: #f0f0f0; text-align: center; font-weight: bold; font-size: 14pt;">
-            DASHBOARD KEUANGAN
-        </th>
+        <th colspan="5" style="background: #f0f0f0; text-align: center; font-weight: bold; font-size: 14pt;">DASHBOARD
+            KEUANGAN</th>
     </tr>
     <tr>
-        <th colspan="5" style="text-align: center;">
-            Periode: Hingga <?php echo date('d F Y', strtotime($today)); ?>
-        </th>
+        <th colspan="5" style="text-align: center;">Periode: Hingga <?php echo date('d F Y', strtotime($today)); ?></th>
     </tr>
     <tr>
         <td colspan="5"></td>
     </tr>
-
-    <!-- Ringkasan -->
     <tr>
         <th colspan="5" style="background: #f0f0f0;">RINGKASAN</th>
     </tr>
@@ -166,8 +140,6 @@ if (isset($_POST['export']) && $_POST['export'] === 'excel') {
     <tr>
         <td colspan="5"></td>
     </tr>
-
-    <!-- Transaksi Terakhir -->
     <tr>
         <th colspan="5" style="background: #f0f0f0;">TRANSAKSI TERAKHIR</th>
     </tr>
@@ -179,18 +151,16 @@ if (isset($_POST['export']) && $_POST['export'] === 'excel') {
         <th style="background: #f0f0f0;">Jumlah</th>
     </tr>
     <?php 
-            mysqli_data_seek($transaksi_result, 0);
-            while($transaksi = mysqli_fetch_assoc($transaksi_result)): 
-        ?>
+    mysqli_data_seek($transaksi_result, 0);
+    while($transaksi = mysqli_fetch_assoc($transaksi_result)): 
+    ?>
     <tr>
         <td><?php echo date('d/m/Y', strtotime($transaksi['tanggal'])); ?></td>
         <td><?php echo $transaksi['nama_kategori'] ?? 'Tanpa Kategori'; ?></td>
         <td><?php echo $transaksi['deskripsi'] ?? '-'; ?></td>
         <td><?php echo ucfirst($transaksi['jenis_transaksi']); ?></td>
-        <td>
-            <?php if($transaksi['jenis_transaksi'] == 'pengeluaran') echo '-'; ?>
-            Rp <?php echo number_format($transaksi['jumlah'], 0, ',', '.'); ?>
-        </td>
+        <td><?php if($transaksi['jenis_transaksi'] == 'pengeluaran') echo '-'; ?>Rp
+            <?php echo number_format($transaksi['jumlah'], 0, ',', '.'); ?></td>
     </tr>
     <?php endwhile; ?>
 </table>
@@ -206,32 +176,8 @@ if (isset($_POST['export']) && $_POST['export'] === 'excel') {
     <title>Dashboard - Manajemen Keuangan</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" href="../css/dashboard.css">
-    <link rel="icon" href="../uploads/iconLogo.png" type="jpg/png" />
-    <style>
-    .alert {
-        padding: 10px;
-        margin-bottom: 15px;
-        border-radius: 5px;
-    }
+    <link rel="icon" href="../uploads/iconLogo.png" type="image/png" />
 
-    .alert-warning {
-        background: #fff3cd;
-        color: #856404;
-        border: 1px solid #ffeeba;
-    }
-
-    .disabled-link {
-        pointer-events: none;
-        opacity: 0.5;
-        text-decoration: line-through;
-    }
-
-    .timer {
-        font-weight: bold;
-        color: #c0392b;
-        margin-left: 10px;
-    }
-    </style>
     <script>
     function updateTimer() {
         const timers = document.querySelectorAll('.timer');
@@ -241,7 +187,6 @@ if (isset($_POST['export']) && $_POST['export'] === 'excel') {
                 let timeRemaining = Math.max(0, Math.floor((new Date(expiry) - new Date()) / 1000));
                 if (timeRemaining <= 0) {
                     timer.textContent = 'Kadaluarsa';
-                    // Refresh halaman untuk memuat status terbaru setelah kadaluarsa
                     window.location.reload();
                     return;
                 }
@@ -254,7 +199,6 @@ if (isset($_POST['export']) && $_POST['export'] === 'excel') {
         });
         setTimeout(updateTimer, 1000);
     }
-
     window.onload = function() {
         updateTimer();
     };
@@ -277,8 +221,8 @@ if (isset($_POST['export']) && $_POST['export'] === 'excel') {
                     class="fas fa-home"></i> Dashboard</a>
             <a href="katagori.php"
                 <?php echo basename($_SERVER['PHP_SELF']) == 'katagori.php' ? 'class="active"' : ''; ?>
-                <?php echo !$can_access_features ? 'class="disabled-link"' : ''; ?>><i class="fas fa-tags"></i> Kategori
-            </a>
+                <?php echo !$can_access_features ? 'class="disabled-link"' : ''; ?>><i class="fas fa-tags"></i>
+                Kategori</a>
             <a href="transaksi.php"
                 <?php echo basename($_SERVER['PHP_SELF']) == 'transaksi.php' ? 'class="active"' : ''; ?>
                 <?php echo !$can_access_features ? 'class="disabled-link"' : ''; ?>><i class="fas fa-exchange-alt"></i>
@@ -299,10 +243,15 @@ if (isset($_POST['export']) && $_POST['export'] === 'excel') {
                 Manajemen Pengguna</a>
             <?php endif; ?>
         </div>
-        <a href="../logout.php" class="btn logout-btn">
-            <i class="fas fa-sign-out-alt"></i> Logout
-        </a>
+        <a href="../logout.php" class="btn logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
     </div>
+
+    <div id="calculator-logo" style="position: absolute; cursor: move;">
+        <img src="../images/calculator.png?v=1" alt="Calculator" width="50" height="50"
+            onerror="this.src='./images/default-calculator.png';">
+    </div>
+
+    <?php include 'calcu.php'; ?>
 
     <div class="main-content">
         <div class="header">
@@ -319,78 +268,126 @@ if (isset($_POST['export']) && $_POST['export'] === 'excel') {
                     </button>
                 </form>
             </div>
+        </div>
 
-            <!-- Notifikasi Peringatan -->
-            <?php if (isset($warning_message)): ?>
-            <div class="alert alert-warning">
-                <?php echo $warning_message; ?>
-            </div>
-            <?php endif; ?>
+        <?php if (isset($warning_message)): ?>
+        <div class="alert alert-warning"><?php echo $warning_message; ?></div>
+        <?php endif; ?>
 
-            <div class="summary-cards">
-                <div class="card">
-                    <div class="card-title">
-                        <i class="fas fa-arrow-up"></i> Total Pemasukan Bulan Ini
-                    </div>
-                    <div class="card-amount pemasukan">
-                        Rp <?php echo number_format($pemasukan['total'], 0, ',', '.'); ?>
-                    </div>
-                </div>
-                <div class="card">
-                    <div class="card-title">
-                        <i class="fas fa-arrow-down"></i> Total Pengeluaran Bulan Ini
-                    </div>
-                    <div class="card-amount pengeluaran">
-                        Rp <?php echo number_format($pengeluaran['total'], 0, ',', '.'); ?>
-                    </div>
-                </div>
-                <div class="card">
-                    <div class="card-title">
-                        <i class="fas fa-wallet"></i> Saldo
-                    </div>
-                    <div class="card-amount">
-                        Rp <?php echo number_format($saldo, 0, ',', '.'); ?>
-                    </div>
+        <div class="summary-cards">
+            <div class="card">
+                <div class="card-title"><i class="fas fa-arrow-up"></i> Total Pemasukan Bulan Ini</div>
+                <div class="card-amount pemasukan">Rp <?php echo number_format($pemasukan['total'], 0, ',', '.'); ?>
                 </div>
             </div>
-
-            <div class="recent-transactions">
-                <h2>Transaksi Terakhir</h2>
-                <table class="transaction-list">
-                    <thead>
-                        <tr>
-                            <th>Tanggal</th>
-                            <th>Kategori</th>
-                            <th>Deskripsi</th>
-                            <th>Jenis</th>
-                            <th>Jumlah</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php if (mysqli_num_rows($transaksi_result) > 0): ?>
-                        <?php while ($transaksi = mysqli_fetch_assoc($transaksi_result)): ?>
-                        <tr>
-                            <td><?php echo date('d/m/Y', strtotime($transaksi['tanggal'])); ?></td>
-                            <td><?php echo htmlspecialchars($transaksi['nama_kategori'] ?? 'Tanpa Kategori'); ?></td>
-                            <td><?php echo htmlspecialchars($transaksi['deskripsi'] ?? '-'); ?></td>
-                            <td>
-                                <span class="<?php echo $transaksi['jenis_transaksi']; ?>">
-                                    <?php echo ucfirst($transaksi['jenis_transaksi']); ?>
-                                </span>
-                            </td>
-                            <td>Rp <?php echo number_format($transaksi['jumlah'], 0, ',', '.'); ?></td>
-                        </tr>
-                        <?php endwhile; ?>
-                        <?php else: ?>
-                        <tr>
-                            <td colspan="5" class="text-center">Belum ada transaksi</td>
-                        </tr>
-                        <?php endif; ?>
-                    </tbody>
-                </table>
+            <div class="card">
+                <div class="card-title"><i class="fas fa-arrow-down"></i> Total Pengeluaran Bulan Ini</div>
+                <div class="card-amount pengeluaran">Rp <?php echo number_format($pengeluaran['total'], 0, ',', '.'); ?>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-title"><i class="fas fa-wallet"></i> Saldo</div>
+                <div class="card-amount">Rp <?php echo number_format($saldo, 0, ',', '.'); ?></div>
             </div>
         </div>
+
+        <div class="recent-transactions">
+            <h2>Transaksi Terakhir</h2>
+            <table class="transaction-list">
+                <thead>
+                    <tr>
+                        <th>Tanggal</th>
+                        <th>Kategori</th>
+                        <th>Deskripsi</th>
+                        <th>Jenis</th>
+                        <th>Jumlah</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if (mysqli_num_rows($transaksi_result) > 0): ?>
+                    <?php while ($transaksi = mysqli_fetch_assoc($transaksi_result)): ?>
+                    <tr>
+                        <td><?php echo date('d/m/Y', strtotime($transaksi['tanggal'])); ?></td>
+                        <td><?php echo htmlspecialchars($transaksi['nama_kategori'] ?? 'Tanpa Kategori'); ?></td>
+                        <td><?php echo htmlspecialchars($transaksi['deskripsi'] ?? '-'); ?></td>
+                        <td><span
+                                class="<?php echo $transaksi['jenis_transaksi']; ?>"><?php echo ucfirst($transaksi['jenis_transaksi']); ?></span>
+                        </td>
+                        <td>Rp <?php echo number_format($transaksi['jumlah'], 0, ',', '.'); ?></td>
+                    </tr>
+                    <?php endwhile; ?>
+                    <?php else: ?>
+                    <tr>
+                        <td colspan="5" class="text-center">Belum ada transaksi</td>
+                    </tr>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
     </div>
+
+    <script>
+    let isDraggingLogo = false;
+    let offsetXLogo, offsetYLogo;
+
+    const logo = document.getElementById('calculator-logo');
+
+    // Load saved position from localStorage
+    const savedLeft = localStorage.getItem('calculatorLeft');
+    const savedTop = localStorage.getItem('calculatorTop');
+    if (savedLeft && savedTop) {
+        logo.style.left = savedLeft + 'px';
+        logo.style.top = savedTop + 'px';
+    } else {
+        // Default position if no saved position
+        logo.style.left = '20px';
+        logo.style.top = '20px';
+    }
+
+    logo.addEventListener('mousedown', function(e) {
+        isDraggingLogo = true;
+        const rect = logo.getBoundingClientRect();
+        offsetXLogo = e.clientX - rect.left;
+        offsetYLogo = e.clientY - rect.top;
+    });
+
+    document.addEventListener('mousemove', function(e) {
+        if (isDraggingLogo) {
+            let newLeft = e.clientX - offsetXLogo;
+            let newTop = e.clientY - offsetYLogo;
+            const viewportWidth = window.innerWidth;
+            const viewportHeight = window.innerHeight;
+            const logoWidth = logo.offsetWidth;
+            const logoHeight = logo.offsetHeight;
+
+            if (newLeft < 0) newLeft = 0;
+            if (newTop < 0) newTop = 0;
+            if (newLeft + logoWidth > viewportWidth) newLeft = viewportWidth - logoWidth;
+            if (newTop + logoHeight > viewportHeight) newTop = viewportHeight - logoHeight;
+
+            logo.style.left = newLeft + 'px';
+            logo.style.top = newTop + 'px';
+        }
+    });
+
+    document.addEventListener('mouseup', function() {
+        if (isDraggingLogo) {
+            // Save the current position to localStorage
+            localStorage.setItem('calculatorLeft', logo.style.left.replace('px', ''));
+            localStorage.setItem('calculatorTop', logo.style.top.replace('px', ''));
+        }
+        isDraggingLogo = false;
+    });
+
+    logo.addEventListener('click', function() {
+        openCalculator();
+    });
+
+    // Fallback image if calculator.png fails to load
+    document.querySelector('#calculator-logo img').addEventListener('error', function() {
+        this.src = './images/default-calculator.png';
+    });
+    </script>
 </body>
 
 </html>
