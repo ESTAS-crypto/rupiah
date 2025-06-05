@@ -23,10 +23,12 @@ try {
     die("Error: " . $e->getMessage());
 }
 
+$is_secret_role = strtolower($user['role']) === 'secret';
+
 $bulan = isset($_GET['bulan']) ? $_GET['bulan'] : date('m');
 $tahun = isset($_GET['tahun']) ? $_GET['tahun'] : date('Y');
-$tanggal_mulai = isset($_GET['tanggal_mulai']) ? $_GET['tanggal_mulai'] : date('Y-m-01', strtotime('2025-02-01')); // Default ke Februari 2025
-$tanggal_akhir = isset($_GET['tanggal_akhir']) ? $_GET['tanggal_akhir'] : date('Y-m-d'); // Default ke hari ini: 2025-03-03
+$tanggal_mulai = isset($_GET['tanggal_mulai']) ? $_GET['tanggal_mulai'] : date('Y-m-01', strtotime('2025-02-01'));
+$tanggal_akhir = isset($_GET['tanggal_akhir']) ? $_GET['tanggal_akhir'] : date('Y-m-d');
 
 $trend_period = isset($_GET['trend_period']) ? $_GET['trend_period'] : '6months';
 $allowed_periods = ['1week', '1month', '2months', '6months', '1year'];
@@ -35,7 +37,7 @@ if (!in_array($trend_period, $allowed_periods)) {
 }
 
 function getRoleIcon($role) {
-    $icons = ['owner' => 'crown', 'coder' => 'code', 'admin' => 'user-shield', 'user' => 'user'];
+    $icons = ['owner' => 'crown', 'coder' => 'code', 'admin' => 'user-shield', 'user' => 'user', 'secret' => 'user-secret'];
     return '<i class="fas fa-' . ($icons[strtolower($role)] ?? 'user') . '"></i>';
 }
 
@@ -76,7 +78,19 @@ $query = "SELECT
 $stmt = mysqli_prepare($conn, $query);
 mysqli_stmt_bind_param($stmt, "iss", $user_id, $tanggal_mulai, $tanggal_akhir);
 mysqli_stmt_execute($stmt);
-$ringkasan = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt));
+$result = mysqli_stmt_get_result($stmt);
+$ringkasan = mysqli_fetch_assoc($result);
+
+// Inisialisasi nilai default jika tidak ada data
+if (!$ringkasan) {
+    $ringkasan = [
+        'total_pemasukan' => 0,
+        'total_pengeluaran' => 0,
+        'saldo' => 0,
+        'jumlah_pemasukan' => 0,
+        'jumlah_pengeluaran' => 0
+    ];
+}
 
 $query_kategori = "SELECT 
                     k.nama_kategori,
@@ -121,58 +135,42 @@ if (isset($_POST['export']) && $_POST['export'] === 'excel') {
     ?>
 <table border="1">
     <tr>
-        <th colspan="4" style="background: #f0f0f0; text-align: center; font-weight: bold; font-size: 14pt;">
-            LAPORAN KEUANGAN
-        </th>
+        <th colspan="4">LAPORAN KEUANGAN</th>
     </tr>
     <tr>
-        <th colspan="4" style="text-align: center;">
-            Periode:
+        <th colspan="4">Periode:
             <?php echo date('d F Y', strtotime($tanggal_mulai)) . ' s/d ' . date('d F Y', strtotime($tanggal_akhir)); ?>
         </th>
     </tr>
     <tr>
-        <td colspan="4"></td>
-    </tr>
-
-    <!-- Ringkasan -->
-    <tr>
-        <th colspan="4" style="background: #f0f0f0;">RINGKASAN</th>
+        <th colspan="4">RINGKASAN</th>
     </tr>
     <tr>
         <th>Total Pemasukan</th>
-        <td>Rp <?php echo number_format($ringkasan['total_pemasukan'], 0, ',', '.'); ?></td>
+        <td>Rp <?php echo number_format($ringkasan['total_pemasukan'] ?? 0, 0, ',', '.'); ?></td>
         <th>Jumlah Transaksi Masuk</th>
-        <td><?php echo $ringkasan['jumlah_pemasukan']; ?></td>
+        <td><?php echo $ringkasan['jumlah_pemasukan'] ?? 0; ?></td>
     </tr>
     <tr>
         <th>Total Pengeluaran</th>
-        <td>Rp <?php echo number_format($ringkasan['total_pengeluaran'], 0, ',', '.'); ?></td>
+        <td>Rp <?php echo number_format($ringkasan['total_pengeluaran'] ?? 0, 0, ',', '.'); ?></td>
         <th>Jumlah Transaksi Keluar</th>
-        <td><?php echo $ringkasan['jumlah_pengeluaran']; ?></td>
+        <td><?php echo $ringkasan['jumlah_pengeluaran'] ?? 0; ?></td>
     </tr>
     <tr>
         <th>Saldo</th>
-        <td colspan="3">Rp <?php echo number_format($ringkasan['saldo'], 0, ',', '.'); ?></td>
+        <td colspan="3">Rp <?php echo number_format($ringkasan['saldo'] ?? 0, 0, ',', '.'); ?></td>
     </tr>
     <tr>
-        <td colspan="4"></td>
-    </tr>
-
-    <!-- Detail per Kategori -->
-    <tr>
-        <th colspan="4" style="background: #f0f0f0;">DETAIL PER KATEGORI</th>
+        <th colspan="4">DETAIL PER KATEGORI</th>
     </tr>
     <tr>
-        <th style="background: #f0f0f0;">Kategori</th>
-        <th style="background: #f0f0f0;">Jenis</th>
-        <th style="background: #f0f0f0;">Jumlah Transaksi</th>
-        <th style="background: #f0f0f0;">Total</th>
+        <th>Kategori</th>
+        <th>Jenis</th>
+        <th>Jumlah Transaksi</th>
+        <th>Total</th>
     </tr>
-    <?php 
-        mysqli_data_seek($kategori_result, 0);
-        while($kategori = mysqli_fetch_assoc($kategori_result)): 
-        ?>
+    <?php while($kategori = mysqli_fetch_assoc($kategori_result)): ?>
     <tr>
         <td><?php echo $kategori['nama_kategori']; ?></td>
         <td><?php echo ucfirst($kategori['jenis_transaksi']); ?></td>
@@ -181,41 +179,28 @@ if (isset($_POST['export']) && $_POST['export'] === 'excel') {
     </tr>
     <?php endwhile; ?>
     <tr>
-        <td colspan="4"></td>
-    </tr>
-
-    <!-- Detail Transaksi -->
-    <tr>
-        <th colspan="4" style="background: #f0f0f0;">DETAIL TRANSAKSI</th>
+        <th colspan="4">DETAIL TRANSAKSI</th>
     </tr>
     <tr>
-        <th style="background: #f0f0f0;">Tanggal</th>
-        <th style="background: #f0f0f0;">Kategori</th>
-        <th style="background: #f0f0f0;">Keterangan</th>
-        <th style="background: #f0f0f0;">Jumlah</th>
+        <th>Tanggal</th>
+        <th>Kategori</th>
+        <th>Keterangan</th>
+        <th>Jumlah</th>
     </tr>
     <?php
-        $query_detail = "SELECT t.*, k.nama_kategori 
-                        FROM transaksi t
-                        JOIN kategori k ON t.kategori_id = k.kategori_id
-                        WHERE t.user_id = ? 
-                        AND t.tanggal BETWEEN ? AND ?
-                        ORDER BY t.tanggal DESC";
+        $query_detail = "SELECT t.*, k.nama_kategori FROM transaksi t JOIN kategori k ON t.kategori_id = k.kategori_id WHERE t.user_id = ? AND t.tanggal BETWEEN ? AND ? ORDER BY t.tanggal DESC";
         $stmt = mysqli_prepare($conn, $query_detail);
         mysqli_stmt_bind_param($stmt, "iss", $user_id, $tanggal_mulai, $tanggal_akhir);
         mysqli_stmt_execute($stmt);
         $detail_result = mysqli_stmt_get_result($stmt);
-
         while($transaksi = mysqli_fetch_assoc($detail_result)): 
         ?>
     <tr>
         <td><?php echo date('d/m/Y', strtotime($transaksi['tanggal'])); ?></td>
         <td><?php echo $transaksi['nama_kategori']; ?></td>
         <td><?php echo $transaksi['deskripsi']; ?></td>
-        <td>
-            <?php if($transaksi['jenis_transaksi'] == 'pengeluaran') echo '-'; ?>
-            Rp <?php echo number_format($transaksi['jumlah'], 0, ',', '.'); ?>
-        </td>
+        <td><?php if($transaksi['jenis_transaksi'] == 'pengeluaran') echo '-'; ?>Rp
+            <?php echo number_format($transaksi['jumlah'], 0, ',', '.'); ?></td>
     </tr>
     <?php endwhile; ?>
 </table>
@@ -234,16 +219,29 @@ if (isset($_POST['export']) && $_POST['export'] === 'excel') {
     <link rel="stylesheet" href="../css/dashboard.css">
     <link rel="stylesheet" href="../css/laporan.css">
     <link rel="icon" href="../uploads/iconLogo.png" type="jpg/png" />
+    <?php if ($is_secret_role): ?>
+    <link rel="stylesheet" href="../css/secret-role.css">
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <script src="../js/secret-role.js"></script>
+    <?php endif; ?>
 </head>
 
-<body>
+<body class="<?php echo $is_secret_role ? 'secret-role-body' : ''; ?>">
+    <?php if ($is_secret_role): ?>
+    <div id="particles-js"></div>
+    <?php endif; ?>
+
     <div class="sidebar">
         <div class="profile">
             <a href="profile.php">
                 <img src="<?php echo !empty($user['foto_profil']) ? '../uploads/profil/' . $user['foto_profil'] : './images/default-profil.png'; ?>"
                     alt="Profile">
             </a>
-            <h3><?php echo htmlspecialchars($user['nama_lengkap']) . ' (' . ucfirst($user['role']) . ') ' . getRoleIcon($user['role']); ?>
+            <h3>
+                <?php 
+                $role_class = $is_secret_role ? 'secret-role' : '';
+                echo htmlspecialchars($user['nama_lengkap']) . ' <span class="' . $role_class . '">(' . ucfirst($user['role']) . ')</span> ' . getRoleIcon($user['role']); 
+                ?>
             </h3>
         </div>
         <div class="menu">
@@ -270,10 +268,10 @@ if (isset($_POST['export']) && $_POST['export'] === 'excel') {
                     class="fas fa-users-cog"></i> Manajemen Pengguna</a>
             <?php endif; ?>
         </div>
-        <a href="logout.php" class="btn logout-btn">
-            <i class="fas fa-sign-out-alt"></i> Logout
-        </a>
+        <a href="logout.php" class="btn logout-btn <?php echo $is_secret_role ? 'secret-role-btn' : ''; ?>"><i
+                class="fas fa-sign-out-alt"></i> Logout</a>
     </div>
+
     <div id="calculator-logo" style="position: absolute; cursor: move;">
         <img src="../images/calculator.png?v=1" alt="Calculator" width="50" height="50"
             onerror="this.src='./images/default-calculator.png';">
@@ -283,65 +281,62 @@ if (isset($_POST['export']) && $_POST['export'] === 'excel') {
 
     <div class="content-wrapper">
         <div class="report-container">
-            <h2>Laporan Keuangan</h2>
+            <h2 class="<?php echo $is_secret_role ? 'secret-role' : ''; ?>">Laporan Keuangan</h2>
 
             <form method="GET" class="filter-form">
-                <input type="date" name="tanggal_mulai" value="<?php echo $tanggal_mulai; ?>">
-                <input type="date" name="tanggal_akhir" value="<?php echo $tanggal_akhir; ?>">
-                <select name="trend_period">
+                <input type="date" name="tanggal_mulai" value="<?php echo $tanggal_mulai; ?>"
+                    class="<?php echo $is_secret_role ? 'glow-on-hover' : ''; ?>">
+                <input type="date" name="tanggal_akhir" value="<?php echo $tanggal_akhir; ?>"
+                    class="<?php echo $is_secret_role ? 'glow-on-hover' : ''; ?>">
+                <select name="trend_period" class="<?php echo $is_secret_role ? 'glow-on-hover' : ''; ?>">
                     <option value="1week" <?php if($trend_period == '1week') echo 'selected'; ?>>1 Minggu</option>
                     <option value="1month" <?php if($trend_period == '1month') echo 'selected'; ?>>1 Bulan</option>
                     <option value="6months" <?php if($trend_period == '6months') echo 'selected'; ?>>6 Bulan</option>
                     <option value="1year" <?php if($trend_period == '1year') echo 'selected'; ?>>1 Tahun</option>
                 </select>
-                <button type="submit" class="btn btn-primary">Filter</button>
+                <button type="submit"
+                    class="btn btn-primary <?php echo $is_secret_role ? 'secret-role-btn glow-on-hover' : ''; ?>">Filter</button>
             </form>
 
             <div class="btn-group">
                 <form method="POST" style="display: inline;">
                     <input type="hidden" name="export" value="excel">
-                    <button type="submit" class="btn btn-success">
+                    <button type="submit"
+                        class="btn btn-success <?php echo $is_secret_role ? 'secret-role-btn glow-on-hover' : ''; ?>">
                         <i class="fas fa-file-excel"></i> Export Excel
                     </button>
                 </form>
             </div>
 
             <div class="summary-cards">
-                <div class="card">
+                <div class="card <?php echo $is_secret_role ? 'glow-on-hover' : ''; ?>">
                     <div class="card-title">Total Pemasukan</div>
-                    <div class="card-amount pemasukan">
-                        Rp <?php echo number_format($ringkasan['total_pemasukan'], 0, ',', '.'); ?>
-                    </div>
-                    <div class="card-subtitle">
-                        <?php echo $ringkasan['jumlah_pemasukan']; ?> transaksi
-                    </div>
+                    <div class="card-amount pemasukan">Rp
+                        <?php echo number_format($ringkasan['total_pemasukan'] ?? 0, 0, ',', '.'); ?></div>
+                    <div class="card-subtitle"><?php echo $ringkasan['jumlah_pemasukan'] ?? 0; ?> transaksi</div>
                 </div>
-                <div class="card">
+                <div class="card <?php echo $is_secret_role ? 'glow-on-hover' : ''; ?>">
                     <div class="card-title">Total Pengeluaran</div>
-                    <div class="card-amount pengeluaran">
-                        Rp <?php echo number_format($ringkasan['total_pengeluaran'], 0, ',', '.'); ?>
-                    </div>
-                    <div class="card-subtitle">
-                        <?php echo $ringkasan['jumlah_pengeluaran']; ?> transaksi
-                    </div>
+                    <div class="card-amount pengeluaran">Rp
+                        <?php echo number_format($ringkasan['total_pengeluaran'] ?? 0, 0, ',', '.'); ?></div>
+                    <div class="card-subtitle"><?php echo $ringkasan['jumlah_pengeluaran'] ?? 0; ?> transaksi</div>
                 </div>
-                <div class="card">
+                <div class="card <?php echo $is_secret_role ? 'glow-on-hover' : ''; ?>">
                     <div class="card-title">Saldo</div>
-                    <div class="card-amount">
-                        Rp <?php echo number_format($ringkasan['saldo'], 0, ',', '.'); ?>
+                    <div class="card-amount">Rp <?php echo number_format($ringkasan['saldo'] ?? 0, 0, ',', '.'); ?>
                     </div>
                 </div>
             </div>
 
             <div class="chart-container">
-                <h3>Trend
+                <h3 class="<?php echo $is_secret_role ? 'secret-role' : ''; ?>">Trend
                     <?php echo ($trend_period == '1week') ? '1 Minggu' : (($trend_period == '1month') ? '1 Bulan' : (($trend_period == '6months') ? '6 Bulan' : '1 Tahun')); ?>
                     Terakhir</h3>
                 <canvas id="trendChart"></canvas>
             </div>
 
             <div class="table-container">
-                <h3>Detail Per Kategori</h3>
+                <h3 class="<?php echo $is_secret_role ? 'secret-role' : ''; ?>">Detail Per Kategori</h3>
                 <table class="data-table">
                     <thead>
                         <tr>
@@ -352,16 +347,11 @@ if (isset($_POST['export']) && $_POST['export'] === 'excel') {
                         </tr>
                     </thead>
                     <tbody>
-                        <?php 
-                        mysqli_data_seek($kategori_result, 0);
-                        while($kategori = mysqli_fetch_assoc($kategori_result)): 
-                        ?>
-                        <tr>
+                        <?php while($kategori = mysqli_fetch_assoc($kategori_result)): ?>
+                        <tr class="<?php echo $is_secret_role ? 'glow-on-hover' : ''; ?>">
                             <td><?php echo htmlspecialchars($kategori['nama_kategori']); ?></td>
-                            <td>
-                                <span class="<?php echo $kategori['jenis_transaksi']; ?>">
-                                    <?php echo ucfirst($kategori['jenis_transaksi']); ?>
-                                </span>
+                            <td><span
+                                    class="<?php echo $kategori['jenis_transaksi']; ?>"><?php echo ucfirst($kategori['jenis_transaksi']); ?></span>
                             </td>
                             <td><?php echo $kategori['jumlah_transaksi']; ?></td>
                             <td>Rp <?php echo number_format($kategori['total'], 0, ',', '.'); ?></td>
@@ -405,15 +395,12 @@ if (isset($_POST['export']) && $_POST['export'] === 'excel') {
     let offsetXLogo, offsetYLogo;
 
     const logo = document.getElementById('calculator-logo');
-
-    // Load saved position from localStorage
     const savedLeft = localStorage.getItem('calculatorLeft');
     const savedTop = localStorage.getItem('calculatorTop');
     if (savedLeft && savedTop) {
         logo.style.left = savedLeft + 'px';
         logo.style.top = savedTop + 'px';
     } else {
-        // Default position if no saved position
         logo.style.left = '20px';
         logo.style.top = '20px';
     }
@@ -446,7 +433,6 @@ if (isset($_POST['export']) && $_POST['export'] === 'excel') {
 
     document.addEventListener('mouseup', function() {
         if (isDraggingLogo) {
-            // Save the current position to localStorage
             localStorage.setItem('calculatorLeft', logo.style.left.replace('px', ''));
             localStorage.setItem('calculatorTop', logo.style.top.replace('px', ''));
         }
@@ -457,7 +443,6 @@ if (isset($_POST['export']) && $_POST['export'] === 'excel') {
         openCalculator();
     });
 
-    // Fallback image if calculator.png fails to load
     document.querySelector('#calculator-logo img').addEventListener('error', function() {
         this.src = './images/default-calculator.png';
     });

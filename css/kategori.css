@@ -5,7 +5,6 @@
     width: 250px;
     height: 100%;
     background: #2c3e50;
-    padding: 20px 0;
     color: white;
 }
 
@@ -95,6 +94,18 @@ td {
 th {
     background: #f8f9fa;
     font-weight: 600;
+}
+
+.secret-role {
+    color: #ff69b4;
+    /* Warna pink */
+    font-weight: bold;
+    transition: color 0.5s ease;
+}
+
+.secret-role:hover {
+    color: #800080;
+    /* Warna ungu */
 }
 
 

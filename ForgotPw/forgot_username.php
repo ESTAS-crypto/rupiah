@@ -34,7 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <title>Lupa Username - Manajemen Keuangan</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="../css/styles.css">
-    <link rel="icon" href="uploads/iconLogo.png" type="jpg/png" />
+    <link rel="icon" href="../uploads/iconLogo.png" type="jpg/png" />
 </head>
 
 <body>

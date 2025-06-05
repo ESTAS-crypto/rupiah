@@ -10,6 +10,48 @@ if (!$conn) {
     die("Koneksi database gagal: " . mysqli_connect_error());
 }
 
+// Fungsi untuk mendapatkan nomor WhatsApp admin dengan fallback
+function getAdminWhatsApp($conn) {
+    // Tetapkan nomor admin yang benar (dapat dikomfirmasi di database)
+    $admin_whatsapp_correct = "62895385890629";
+    
+    $query = "SELECT no_whatsapp FROM users WHERE role = 'admin' LIMIT 1";
+    $result = mysqli_query($conn, $query);
+    
+    if ($result && mysqli_num_rows($result) > 0) {
+        $admin = mysqli_fetch_assoc($result);
+        if (isset($admin['no_whatsapp']) && !empty($admin['no_whatsapp'])) {
+            // Jika nomor di database, gunakan nomor tersebut
+            return $admin['no_whatsapp'];
+        }
+    }
+    
+    // Fallback: Jika tidak ada admin atau tidak ada nomor WhatsApp admin
+    // Gunakan nomor yang sudah dikonfirmasi benar (nomor admin yang benar)
+    
+    // Cek apakah ada admin
+    $check_query = "SELECT COUNT(*) as count FROM users WHERE role = 'admin'";
+    $check_result = mysqli_query($conn, $check_query);
+    $admin_count = mysqli_fetch_assoc($check_result)['count'];
+    
+    if ($admin_count == 0) {
+        // Jika tidak ada admin, tambahkan admin baru dengan nomor yang benar
+        $admin_username = "admin";
+        $admin_password = password_hash("admin123", PASSWORD_DEFAULT);
+        $admin_email = "admin@example.com";
+        
+        $insert_query = "INSERT INTO users (username, password, email, role, no_whatsapp) 
+                         VALUES ('$admin_username', '$admin_password', '$admin_email', 'admin', '$admin_whatsapp_correct')";
+        mysqli_query($conn, $insert_query);
+    } else {
+        // Update nomor WhatsApp admin yang sudah ada
+        $update_query = "UPDATE users SET no_whatsapp = '$admin_whatsapp_correct' WHERE role = 'admin' AND (no_whatsapp IS NULL OR no_whatsapp = '')";
+        mysqli_query($conn, $update_query);
+    }
+    
+    return $admin_whatsapp_correct;
+}
+
 // Fungsi Umum untuk Sesi
 function startSession() {
     if (session_status() === PHP_SESSION_NONE) {
@@ -39,7 +81,7 @@ function redirectIfLoggedIn() {
 
 function checkSessionTimeout() {
     startSession();
-    $timeout = 100; // 30 menit
+    $timeout = 1800; // 30 menit
     if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity'] > $timeout)) {
         session_unset();
         session_destroy();
@@ -103,6 +145,73 @@ function getTimeRemaining($expiry) {
     $minutes = floor(($diff % (60 * 60)) / 60);
     $seconds = $diff % 60;
     return sprintf("%d hari, %d jam, %d menit, %d detik", $days, $hours, $minutes, $seconds);
+}
+
+// Fungsi untuk memperbarui peran pengguna
+function updateUserRole($conn) {
+    header('Content-Type: application/json');
+    startSession();
+
+    $response = ['success' => false];
+
+    // Periksa apakah pengguna sudah login
+    if (!isset($_SESSION['user_id'])) {
+        $response['message'] = 'Anda belum login. Silakan login terlebih dahulu.';
+        echo json_encode($response);
+        exit();
+    }
+
+    // Periksa metode permintaan
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        $response['message'] = 'Metode permintaan harus POST.';
+        echo json_encode($response);
+        exit();
+    }
+
+    // Decode input JSON
+    $input = json_decode(file_get_contents('php://input'), true);
+    if ($input === null || !isset($input['code'])) {
+        error_log('Gagal mendekode JSON atau kode tidak ada: ' . file_get_contents('php://input'));
+        $response['message'] = 'Input JSON tidak valid atau kode tidak ada.';
+        echo json_encode($response);
+        exit();
+    }
+
+    // Periksa kode rahasia
+    if ($input['code'] !== '230525') {
+        error_log('Kode rahasia salah: ' . $input['code']);
+        $response['message'] = 'Kode rahasia salah.';
+        echo json_encode($response);
+        exit();
+    }
+
+    // Update peran pengguna
+    $user_id = $_SESSION['user_id'];
+    $new_role = 'secret';
+
+    try {
+        $update_query = "UPDATE users SET role = ? WHERE user_id = ?";
+        $stmt = mysqli_prepare($conn, $update_query);
+        if ($stmt === false) {
+            throw new Exception('Gagal menyiapkan query: ' . mysqli_error($conn));
+        }
+        mysqli_stmt_bind_param($stmt, "si", $new_role, $user_id);
+        $success = mysqli_stmt_execute($stmt);
+
+        if ($success) {
+            $_SESSION['role'] = $new_role;
+            $response['success'] = true;
+            $response['message'] = 'Anda telah menemukan role terssembunyi yaitu role: ' . $new_role;
+        } else {
+            throw new Exception('Gagal memperbarui peran: ' . mysqli_error($conn));
+        }
+        mysqli_stmt_close($stmt);
+    } catch (Exception $e) {
+        error_log('Error memperbarui peran: ' . $e->getMessage());
+        $response['message'] = 'Terjadi kesalahan saat memperbarui peran: ' . $e->getMessage();
+    }
+
+    echo json_encode($response);
 }
 
 // Aktifkan error reporting untuk debugging

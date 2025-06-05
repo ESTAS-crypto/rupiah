@@ -322,6 +322,37 @@ body {
 }
 
 
+/* Table Container for Responsiveness */
+
+.table-container {
+    overflow-x: auto;
+    width: 100%;
+    -webkit-overflow-scrolling: touch;
+    /* Smooth scrolling on mobile */
+}
+
+.data-table {
+    width: 100%;
+    min-width: 800px;
+    /* Ensure minimum width for scrolling */
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.data-table th,
+.data-table td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+    white-space: nowrap;
+    /* Prevent text wrapping */
+}
+
+.data-table th {
+    background: #f4f4f4;
+}
+
+
 /* Media Queries for Responsiveness */
 
 @media (max-width: 1024px) {

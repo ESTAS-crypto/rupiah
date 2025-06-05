@@ -1,9 +1,17 @@
 <?php
-// login.php, register.php, logout.php
+// File: logout.php
 require_once 'config/config.php';
-require_once 'config/auth_check.php';
-session_start();
+
+// Mulai sesi jika belum dimulai
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// Hapus semua data sesi
+session_unset();
 session_destroy();
-header("Location: login.php");
+
+// Redirect ke halaman login dengan pesan sukses
+header("Location: login.php?msg=logout");
 exit();
 ?>

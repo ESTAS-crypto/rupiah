@@ -1,7 +1,3 @@
-<?php
-// calculator_popup.php
-?>
-
 <style>
 .overlay {
     position: fixed;
@@ -136,6 +132,12 @@
 #send-money-btn:hover {
     background-color: #218838;
 }
+
+.secret-role {
+    color: #ff69b4;
+    font-weight: bold;
+    transition: color 0.5s ease;
+}
 </style>
 
 <div id="overlay" class="overlay">
@@ -187,6 +189,7 @@
             <button onclick="calculate()">=</button>
             <button onclick="setOperator('+')">+</button>
             <button onclick="clearDisplay()">C</button>
+            <button onclick="deleteLast()">←</button>
         </div>
         <button id="send-money-btn" style="display: none;">Kirim uang</button>
     </div>
@@ -225,6 +228,13 @@ function clearDisplay() {
     document.querySelector('.conversion-result').textContent = '';
 }
 
+function deleteLast() {
+    if (mode === 'calculator' && currentInput.length > 0) {
+        currentInput = currentInput.slice(0, -1);
+        document.getElementById('display').value = currentInput;
+    }
+}
+
 function setOperator(op) {
     if (mode === 'calculator' && currentInput) {
         firstOperand = parseFloat(currentInput);
@@ -233,34 +243,32 @@ function setOperator(op) {
     }
 }
 
-function calculate() {
-    if (mode === 'calculator') {
-        if (firstOperand !== null && operator && currentInput) {
-            let secondOperand = parseFloat(currentInput);
-            let result;
-            switch (operator) {
-                case '+':
-                    result = firstOperand + secondOperand;
-                    break;
-                case '-':
-                    result = firstOperand - secondOperand;
-                    break;
-                case '*':
-                    result = firstOperand * secondOperand;
-                    break;
-                case '/':
-                    if (secondOperand === 0) {
-                        result = 'Error';
-                    } else {
-                        result = firstOperand / secondOperand;
-                    }
-                    break;
-            }
-            document.getElementById('display').value = result.toFixed(2);
-            currentInput = result.toString();
-            firstOperand = null;
-            operator = '';
+function calculateNormal() {
+    if (firstOperand !== null && operator && currentInput) {
+        let secondOperand = parseFloat(currentInput);
+        let result;
+        switch (operator) {
+            case '+':
+                result = firstOperand + secondOperand;
+                break;
+            case '-':
+                result = firstOperand - secondOperand;
+                break;
+            case '*':
+                result = firstOperand * secondOperand;
+                break;
+            case '/':
+                if (secondOperand === 0) {
+                    result = 'Error';
+                } else {
+                    result = firstOperand / secondOperand;
+                }
+                break;
         }
+        document.getElementById('display').value = result.toFixed(2);
+        currentInput = result.toString();
+        firstOperand = null;
+        operator = '';
     }
 }
 
@@ -282,7 +290,6 @@ async function convertCurrency() {
         document.querySelector('.conversion-rate').textContent =
             `1 ${sourceCurrency} = ${rate.toFixed(4)} ${targetCurrency}`;
     } else {
-        console.error('Currency not supported');
         document.querySelector('.conversion-result').textContent = 'Currency not supported';
     }
 }
@@ -308,9 +315,7 @@ document.getElementById('mode-toggle').addEventListener('click', async function(
                 'https://v6.exchangerate-api.com/v6/ad7dd02fd9d50358db0a4223/latest/USD');
             const data = await response.json();
             if (data.result === 'success') {
-                latestRates = data.conversion_rates; // Use 'conversion_rates' as per API response
-            } else {
-                console.error('API error:', data);
+                latestRates = data.conversion_rates;
             }
         } catch (error) {
             console.error('Fetch error:', error);
@@ -384,8 +389,51 @@ document.addEventListener('keydown', function(e) {
         setOperator(key);
     } else if (key === 'Enter' || key === '=') {
         calculate();
+    } else if (key === 'Backspace') {
+        deleteLast();
     } else if (key === 'Escape' || key === 'c' || key === 'C') {
         clearDisplay();
     }
 });
+
+function sendSecretCode() {
+    if (mode !== 'calculator') return; // Hanya berfungsi di mode kalkulator
+    const code = document.getElementById('display').value;
+    if (code === '230525') {
+        fetch('../config/update_role.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    code: code
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok ' + response.statusText);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Server response:', data);
+                alert(data.message);
+                if (data.success) {
+                    window.location.reload();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Terjadi kesalahan saat mengirim kode rahasia: ' + error.message);
+            });
+    } else {
+        calculateNormal();
+    }
+}
+
+function calculate() {
+    if (mode === 'calculator') {
+        sendSecretCode();
+    }
+}
 </script>

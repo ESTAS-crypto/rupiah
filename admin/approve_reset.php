@@ -88,14 +88,6 @@ if (isset($_POST['approve']) || isset($_POST['reject'])) {
                         $update_stmt = $conn->prepare("UPDATE password_reset_requests SET status = ?, approved_at = NOW(), verification_code = ?, expired_at = ? WHERE id = ?");
                         $update_stmt->bind_param("sisi", $status, $verification_code, $expired_at, $request_id);
                         if ($update_stmt->execute() && $update_stmt->affected_rows > 0) {
-                            // Debugging: Cek apa yang disimpan di database
-                            $debug_stmt = $conn->prepare("SELECT status, expired_at FROM password_reset_requests WHERE id = ?");
-                            $debug_stmt->bind_param("i", $request_id);
-                            $debug_stmt->execute();
-                            $debug_result = $debug_stmt->get_result();
-                            $updated_data = $debug_result->fetch_assoc();
-                            
-
                             // Ambil nomor WhatsApp
                             $whatsapp_stmt = $conn->prepare("SELECT u.no_whatsapp FROM users u JOIN password_reset_requests prr ON u.user_id = prr.user_id WHERE prr.id = ?");
                             $whatsapp_stmt->bind_param("i", $request_id);
@@ -149,12 +141,10 @@ if (!$pending_result) {
 
 // Ambil permintaan approved yang belum kadaluarsa
 $approved_query = "SELECT prr.id, prr.user_id, u.username, prr.verification_code, prr.expired_at FROM password_reset_requests prr JOIN users u ON prr.user_id = u.user_id WHERE prr.status = 'approved' AND prr.expired_at > NOW()";
-$approved_result = mysqli_query($conn, $approved_query); // Perbaikan: Hapus real_escape_string dari kueri
+$approved_result = mysqli_query($conn, $approved_query);
 if (!$approved_result) {
     $error = "Gagal mengambil data approved: " . mysqli_error($conn);
 }
-
-
 
 ?>
 
@@ -271,6 +261,15 @@ if (!$approved_result) {
     .text-center {
         text-align: center;
     }
+
+    .evidence-photo {
+        color: #007bff;
+        text-decoration: underline;
+    }
+
+    .evidence-photo:hover {
+        color: #0056b3;
+    }
     </style>
 </head>
 
@@ -336,6 +335,7 @@ if (!$approved_result) {
                     <th>ID Permintaan</th>
                     <th>Username</th>
                     <th>Bukti</th>
+                    <th>Foto Bukti</th>
                     <th>Dibuat Pada</th>
                     <th>Aksi</th>
                 </tr>
@@ -343,10 +343,29 @@ if (!$approved_result) {
             <tbody>
                 <?php if ($pending_result && mysqli_num_rows($pending_result) > 0): ?>
                 <?php while ($row = mysqli_fetch_assoc($pending_result)): ?>
+                <?php
+                    // Pisahkan teks bukti dan foto jika ada
+                    $evidence_text = $row['evidence'];
+                    $photo_url = '';
+                    if (preg_match('/\[Foto: (.+?)\]/', $row['evidence'], $match)) {
+                        $photo_filename = $match[1];
+                        $evidence_text = str_replace($match[0], '', $row['evidence']);
+                        $base_url = "http://yourdomain.com/uploads/evidence/";
+                        $photo_url = $base_url . $photo_filename;
+                    }
+                ?>
                 <tr>
                     <td><?php echo htmlspecialchars($row['id']); ?></td>
                     <td><?php echo htmlspecialchars($row['username']); ?></td>
-                    <td><?php echo htmlspecialchars($row['evidence']); ?></td>
+                    <td><?php echo htmlspecialchars($evidence_text); ?></td>
+                    <td>
+                        <?php if ($photo_url): ?>
+                        <a href="<?php echo htmlspecialchars($photo_url); ?>" target="_blank"
+                            class="evidence-photo">Lihat Foto</a>
+                        <?php else: ?>
+                        Tidak ada
+                        <?php endif; ?>
+                    </td>
                     <td><?php echo htmlspecialchars($row['created_at']); ?></td>
                     <td>
                         <form method="POST" action="">
@@ -359,7 +378,7 @@ if (!$approved_result) {
                 <?php endwhile; ?>
                 <?php else: ?>
                 <tr>
-                    <td colspan="5" class="text-center">Tidak ada permintaan pending saat ini.</td>
+                    <td colspan="6" class="text-center">Tidak ada permintaan pending saat ini.</td>
                 </tr>
                 <?php endif; ?>
             </tbody>

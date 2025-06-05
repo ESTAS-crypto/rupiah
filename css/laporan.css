@@ -111,6 +111,18 @@
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
+.secret-role {
+    color: #ff69b4;
+    /* Warna pink */
+    font-weight: bold;
+    transition: color 0.5s ease;
+}
+
+.secret-role:hover {
+    color: #800080;
+    /* Warna ungu */
+}
+
 
 /* Table container */
 
