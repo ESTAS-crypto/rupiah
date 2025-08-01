@@ -103,20 +103,13 @@ if (!isset($_SESSION['notification_shown']) || $_SESSION['notification_shown'] !
 }
 
 // Ambil notifikasi terbaru
-$notif_query = "SELECT message, created_at FROM notifications WHERE user_id = ? AND is_read = 0 ORDER BY created_at DESC LIMIT 1";
+$notif_query = "SELECT message, created_at FROM notifications WHERE user_id = ? AND is_read = 0 AND (expiry IS NULL OR expiry > NOW()) ORDER BY created_at DESC LIMIT 1";
 $stmt = mysqli_prepare($conn, $notif_query);
 mysqli_stmt_bind_param($stmt, "i", $user_id);
 mysqli_stmt_execute($stmt);
 $notif_result = mysqli_stmt_get_result($stmt);
 $latest_notif = mysqli_fetch_assoc($notif_result);
 mysqli_stmt_close($stmt);
-
-// Debugging: Tambahkan log untuk memeriksa apakah notifikasi ditemukan
-if ($latest_notif) {
-    echo "<!-- Debugging: Notifikasi ditemukan - Pesan: " . htmlspecialchars($latest_notif['message']) . ", Dibuat: " . $latest_notif['created_at'] . " -->";
-} else {
-    echo "<!-- Debugging: Tidak ada notifikasi yang ditemukan untuk user_id: $user_id -->";
-}
 
 try {
     $today = date('Y-m-d', strtotime('2025-05-14'));
@@ -345,6 +338,17 @@ if (isset($_POST['export']) && $_POST['export'] === 'excel') {
         margin-bottom: 20px;
         border-radius: 5px;
     }
+
+    .troll-message {
+        background: #ffeb3b;
+        padding: 10px;
+        border: 2px solid #f57f17;
+        color: #d84315;
+        font-weight: bold;
+        text-align: center;
+        border-radius: 5px;
+        margin: 10px 0;
+    }
     </style>
 </head>
 
@@ -368,34 +372,44 @@ if (isset($_POST['export']) && $_POST['export'] === 'excel') {
         </div>
         <div class="menu">
             <a href="dashboard.php"
-                <?php echo basename($_SERVER['PHP_SELF']) == 'dashboard.php' ? 'class="active"' : ''; ?>><i
-                    class="fas fa-home"></i> Dashboard</a>
+                <?php echo basename($_SERVER['PHP_SELF']) == 'dashboard.php' ? 'class="active"' : ''; ?>>
+                <i class="fas fa-home"></i> Dashboard
+            </a>
             <a href="katagori.php"
                 <?php echo basename($_SERVER['PHP_SELF']) == 'katagori.php' ? 'class="active"' : ''; ?>
-                <?php echo !$can_access_features ? 'class="disabled-link"' : ''; ?>><i class="fas fa-tags"></i>
-                Kategori</a>
+                <?php echo !$can_access_features ? 'class="disabled-link"' : ''; ?>>
+                <i class="fas fa-tags"></i> Kategori
+            </a>
             <a href="transaksi.php"
                 <?php echo basename($_SERVER['PHP_SELF']) == 'transaksi.php' ? 'class="active"' : ''; ?>
-                <?php echo !$can_access_features ? 'class="disabled-link"' : ''; ?>><i class="fas fa-exchange-alt"></i>
-                Transaksi</a>
+                <?php echo !$can_access_features ? 'class="disabled-link"' : ''; ?>>
+                <i class="fas fa-exchange-alt"></i> Transaksi
+            </a>
             <a href="laporan.php" <?php echo basename($_SERVER['PHP_SELF']) == 'laporan.php' ? 'class="active"' : ''; ?>
-                <?php echo !$can_access_features ? 'class="disabled-link"' : ''; ?>><i class="fas fa-chart-bar"></i>
-                Laporan</a>
+                <?php echo !$can_access_features ? 'class="disabled-link"' : ''; ?>>
+                <i class="fas fa-chart-bar"></i> Laporan
+            </a>
             <?php if (in_array($user['role'], ['admin', 'coder', 'owner'])): ?>
             <a href="../admin/approve_reset.php"
                 <?php echo basename($_SERVER['PHP_SELF']) == 'approve_reset.php' ? 'class="active"' : ''; ?>
-                <?php echo !$can_access_features ? 'class="disabled-link"' : ''; ?>><i class="fas fa-check-circle"></i>
-                Persetujuan Reset</a>
+                <?php echo !$can_access_features ? 'class="disabled-link"' : ''; ?>>
+                <i class="fas fa-check-circle"></i> Persetujuan Reset
+            </a>
             <?php endif; ?>
             <?php if (in_array($user['role'], ['coder', 'owner'])): ?>
             <a href="../admin/manage_users.php"
                 <?php echo basename($_SERVER['PHP_SELF']) == 'manage_users.php' ? 'class="active"' : ''; ?>
-                <?php echo !$can_access_features ? 'class="disabled-link"' : ''; ?>><i class="fas fa-users-cog"></i>
-                Manajemen Pengguna</a>
+                <?php echo !$can_access_features ? 'class="disabled-link"' : ''; ?>>
+                <i class="fas fa-users-cog"></i> Manajemen Pengguna
+            </a>
+            <a href="troll.php" <?php echo basename($_SERVER['PHP_SELF']) == 'troll.php' ? 'class="active"' : ''; ?>>
+                <i class="fas fa-skull-crossbones"></i> Troll
+            </a>
             <?php endif; ?>
         </div>
-        <a href="../logout.php" class="btn logout-btn <?php echo $is_secret_role ? 'secret-role-btn' : ''; ?>"><i
-                class="fas fa-sign-out-alt"></i> Logout</a>
+        <a href="../logout.php" class="btn logout-btn <?php echo $is_secret_role ? 'secret-role-btn' : ''; ?>">
+            <i class="fas fa-sign-out-alt"></i> Logout
+        </a>
     </div>
 
     <div id="calculator-logo" style="position: absolute; cursor: move;">
@@ -404,6 +418,71 @@ if (isset($_POST['export']) && $_POST['export'] === 'excel') {
     </div>
 
     <?php include 'calcu.php'; ?>
+
+    <?php
+    if (isset($_SESSION['user_id'])) {
+        $user_id = $_SESSION['user_id'];
+        $current_time = date('Y-m-d H:i:s');
+
+        // Hapus troll yang sudah kadaluarsa
+        $delete_query = "DELETE FROM trolls WHERE target_user_id = ? AND expiry < ?";
+        $delete_stmt = mysqli_prepare($conn, $delete_query);
+        mysqli_stmt_bind_param($delete_stmt, "is", $user_id, $current_time);
+        mysqli_stmt_execute($delete_stmt);
+        mysqli_stmt_close($delete_stmt);
+
+        // Ambil troll aktif
+        $troll_query = "SELECT troll_type, troll_message, expiry, notification_duration FROM trolls WHERE target_user_id = ? AND (expiry IS NULL OR expiry > ?)";
+        $stmt = mysqli_prepare($conn, $troll_query);
+        mysqli_stmt_bind_param($stmt, "is", $user_id, $current_time);
+        mysqli_stmt_execute($stmt);
+        $troll_result = mysqli_stmt_get_result($stmt);
+        $active_trolls = [];
+        while ($troll = mysqli_fetch_assoc($troll_result)) {
+            $active_trolls[] = $troll;
+        }
+        mysqli_stmt_close($stmt);
+
+        // Logging untuk debugging
+        error_log("Active trolls for user $user_id: " . print_r($active_trolls, true));
+
+        foreach ($active_trolls as $troll) {
+            $troll_type = $troll['troll_type'];
+            $troll_message = $troll['troll_message'];
+            $notification_duration = $troll['notification_duration'] ?? 10; // Default 10 detik
+
+            switch ($troll_type) {
+                case 'message':
+                    if (!empty($troll_message)) {
+                        echo "<div class='troll-message' data-duration='$notification_duration'>" . htmlspecialchars($troll_message) . "</div>";
+                    }
+                    break;
+                case 'theme':
+                    echo "<style>body { background-color: #000; color: #fff; }</style>";
+                    break;
+                case 'redirect':
+                    if (rand(1, 10) == 1 && (!isset($_SESSION['last_redirect']) || time() - $_SESSION['last_redirect'] > 60)) {
+                        $_SESSION['last_redirect'] = time();
+                        header("Location: https://www.example.com/funny-page");
+                        exit();
+                    }
+                    break;
+                case 'invert':
+                    echo "<style>body { filter: invert(1); }</style>";
+                    break;
+                case 'slow':
+                    usleep(500000); // Delay 0.5 detik
+                    break;
+                case 'sound':
+                    echo "<audio autoplay><source src='../sounds/funny-sound.mp3' type='audio/mpeg'></audio>";
+                    break;
+                case 'cursor':
+                    echo "<script>document.body.style.cursor = 'url(../images/cursor-trail.png), auto';</script>";
+                    break;
+            }
+        }
+    }
+    ?>
 
     <div class="main-content">
         <div class="header">
@@ -554,20 +633,14 @@ if (isset($_POST['export']) && $_POST['export'] === 'excel') {
 
     function markAsRead() {
         fetch('dashboard/mark_notification_read.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                body: 'user_id=<?php echo $user_id; ?>'
-            }).then(response => response.json())
-            .then(data => {
-                console.log(data); // Debugging: Lihat respons di console
-                if (data.success) {
-                    document.querySelector('.notification-box').style.display = 'none';
-                }
-            }).catch(error => {
-                console.error('Error:', error);
-            });
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: 'user_id=<?php echo $user_id; ?>'
+        }).then(response => response.json()).then(data => {
+            if (data.success) document.querySelector('.notification-box').style.display = 'none';
+        }).catch(error => console.error('Error:', error));
     }
 
     let isDraggingLogo = false;
@@ -581,53 +654,22 @@ if (isset($_POST['export']) && $_POST['export'] === 'excel') {
     } else {
         logo.style.left = '20px';
         logo.style.top = '20px';
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const trollMessages = document.querySelectorAll('.troll-message');
+            trollMessages.forEach(message => {
+                const duration = parseInt(message.getAttribute('data-duration')) *
+                    1000; // Convert detik ke milidetik
+                setTimeout(() => {
+                    message.style.display = 'none';
+                }, duration);
+            });
+        });
+
+        window.onload = function() {
+            updateTimer();
+        };
     }
-
-    logo.addEventListener('mousedown', function(e) {
-        isDraggingLogo = true;
-        const rect = logo.getBoundingClientRect();
-        offsetXLogo = e.clientX - rect.left;
-        offsetYLogo = e.clientY - rect.top;
-    });
-
-    document.addEventListener('mousemove', function(e) {
-        if (isDraggingLogo) {
-            let newLeft = e.clientX - offsetXLogo;
-            let newTop = e.clientY - offsetYLogo;
-            const viewportWidth = window.innerWidth;
-            const viewportHeight = window.innerHeight;
-            const logoWidth = logo.offsetWidth;
-            const logoHeight = logo.offsetHeight;
-
-            if (newLeft < 0) newLeft = 0;
-            if (newTop < 0) newTop = 0;
-            if (newLeft + logoWidth > viewportWidth) newLeft = viewportWidth - logoWidth;
-            if (newTop + logoHeight > viewportHeight) newTop = viewportHeight - logoHeight;
-
-            logo.style.left = newLeft + 'px';
-            logo.style.top = newTop + 'px';
-        }
-    });
-
-    document.addEventListener('mouseup', function() {
-        if (isDraggingLogo) {
-            localStorage.setItem('calculatorLeft', logo.style.left.replace('px', ''));
-            localStorage.setItem('calculatorTop', logo.style.top.replace('px', ''));
-        }
-        isDraggingLogo = false;
-    });
-
-    logo.addEventListener('click', function() {
-        openCalculator();
-    });
-
-    document.querySelector('#calculator-logo img').addEventListener('error', function() {
-        this.src = './images/default-calculator.png';
-    });
-
-    window.onload = function() {
-        updateTimer();
-    };
     </script>
 </body>
 

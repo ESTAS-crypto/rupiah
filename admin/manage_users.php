@@ -138,48 +138,62 @@ mysqli_stmt_close($stats_stmt);
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Handle mass notification
     if (isset($_POST['send_notification'])) {
-        if (!isset($_POST['selected_users']) || empty($_POST['selected_users'])) {
-            $_SESSION['error'] = "Silakan pilih setidaknya satu pengguna untuk mengirim notifikasi.";
-            header("Location: manage_users.php");
-            exit();
-        }
-
-        $selected_users = $_POST['selected_users'];
-        $notification_message = trim($_POST['notification_message']);
-        if (empty($notification_message)) {
-            $_SESSION['error'] = "Pesan notifikasi tidak boleh kosong.";
-        } else {
-            foreach ($selected_users as $target_user_id) {
-                $target_user_id = filter_var($target_user_id, FILTER_VALIDATE_INT);
-                if ($target_user_id === false || $target_user_id <= 0) {
-                    $_SESSION['error'] = "Salah satu ID pengguna tidak valid.";
-                    header("Location: manage_users.php");
-                    exit();
-                }
-
-                $check_query = "SELECT user_id FROM users WHERE user_id = ?";
-                $check_stmt = mysqli_prepare($conn, $check_query);
-                mysqli_stmt_bind_param($check_stmt, "i", $target_user_id);
-                mysqli_stmt_execute($check_stmt);
-                $check_result = mysqli_stmt_get_result($check_stmt);
-                if (mysqli_num_rows($check_result) === 0) {
-                    $_SESSION['error'] = "Pengguna dengan ID $target_user_id tidak ditemukan.";
-                    header("Location: manage_users.php");
-                    exit();
-                }
-                mysqli_stmt_close($check_stmt);
-
-                $insert_query = "INSERT INTO notifications (user_id, message, created_at, is_read) VALUES (?, ?, NOW(), 0)";
-                $stmt = mysqli_prepare($conn, $insert_query);
-                mysqli_stmt_bind_param($stmt, "is", $target_user_id, $notification_message);
-                mysqli_stmt_execute($stmt);
-                mysqli_stmt_close($stmt);
-            }
-            $_SESSION['success'] = "Notifikasi berhasil dikirim kepada pengguna yang dipilih.";
-        }
+    if (!isset($_POST['selected_users']) || empty($_POST['selected_users'])) {
+        $_SESSION['error'] = "Silakan pilih setidaknya satu pengguna untuk mengirim notifikasi.";
         header("Location: manage_users.php");
         exit();
     }
+
+    $selected_users = $_POST['selected_users'];
+    $notification_message = trim($_POST['notification_message']);
+    $duration_value = filter_input(INPUT_POST, 'notification_duration_value', FILTER_VALIDATE_INT);
+    $duration_unit = $_POST['notification_duration_unit'] ?? '';
+
+    if (empty($notification_message)) {
+        $_SESSION['error'] = "Pesan notifikasi tidak boleh kosong.";
+    } elseif (!$duration_value || !in_array($duration_unit, ['seconds', 'minutes', 'hours', 'days'])) {
+        $_SESSION['error'] = "Durasi notifikasi tidak valid.";
+    } else {
+        $seconds = 0;
+        switch ($duration_unit) {
+            case 'seconds': $seconds = $duration_value; break;
+            case 'minutes': $seconds = $duration_value * 60; break;
+            case 'hours': $seconds = $duration_value * 3600; break;
+            case 'days': $seconds = $duration_value * 86400; break;
+        }
+        $expiry = date('Y-m-d H:i:s', time() + $seconds);
+
+        foreach ($selected_users as $target_user_id) {
+            $target_user_id = filter_var($target_user_id, FILTER_VALIDATE_INT);
+            if ($target_user_id === false || $target_user_id <= 0) {
+                $_SESSION['error'] = "Salah satu ID pengguna tidak valid.";
+                header("Location: manage_users.php");
+                exit();
+            }
+
+            $check_query = "SELECT user_id FROM users WHERE user_id = ?";
+            $check_stmt = mysqli_prepare($conn, $check_query);
+            mysqli_stmt_bind_param($check_stmt, "i", $target_user_id);
+            mysqli_stmt_execute($check_stmt);
+            $check_result = mysqli_stmt_get_result($check_stmt);
+            if (mysqli_num_rows($check_result) === 0) {
+                $_SESSION['error'] = "Pengguna dengan ID $target_user_id tidak ditemukan.";
+                header("Location: manage_users.php");
+                exit();
+            }
+            mysqli_stmt_close($check_stmt);
+
+            $insert_query = "INSERT INTO notifications (user_id, message, created_at, is_read, expiry) VALUES (?, ?, NOW(), 0, ?)";
+            $stmt = mysqli_prepare($conn, $insert_query);
+            mysqli_stmt_bind_param($stmt, "iss", $target_user_id, $notification_message, $expiry);
+            mysqli_stmt_execute($stmt);
+            mysqli_stmt_close($stmt);
+        }
+        $_SESSION['success'] = "Notifikasi berhasil dikirim kepada pengguna yang dipilih.";
+    }
+    header("Location: manage_users.php");
+    exit();
+    }   
 
     // Handle unban users
     if (isset($_POST['unban_users']) && isset($_POST['selected_users'])) {
@@ -622,6 +636,10 @@ function getRoleIcon($role) {
             <a href="manage_users.php" class="active"><i class="fas fa-users-cog"></i> Manajemen Pengguna</a>
             <?php endif; ?>
 
+            <?php if (in_array($role, ['coder', 'owner'])): ?>
+            <a href="troll.php" class="active"><i class="fas fa-skull-crossbones"></i> Troll</a>
+            <?php endif; ?>
+
         </div>
         <a href="logout.php" class="btn logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
     </div>
@@ -725,6 +743,15 @@ function getRoleIcon($role) {
                 <h3>Kirim Notifikasi Massal</h3>
                 <textarea name="notification_message" placeholder="Masukkan pesan notifikasi di sini..."
                     required></textarea>
+                <label for="notification_duration_value">Durasi Notifikasi:</label>
+                <input type="number" name="notification_duration_value" id="notification_duration_value" min="1"
+                    placeholder="Nilai" required>
+                <select name="notification_duration_unit" id="notification_duration_unit" required>
+                    <option value="seconds">Detik</option>
+                    <option value="minutes">Menit</option>
+                    <option value="hours">Jam</option>
+                    <option value="days">Hari</option>
+                </select>
                 <button type="submit" name="send_notification" class="btn">Kirim Notifikasi</button>
             </div>
         </form>

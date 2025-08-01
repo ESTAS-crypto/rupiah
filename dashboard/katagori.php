@@ -301,6 +301,11 @@ try {
                 <?php echo basename($_SERVER['PHP_SELF']) == 'manage_users.php' ? 'class="active"' : ''; ?>><i
                     class="fas fa-users-cog"></i> Manajemen Pengguna</a>
             <?php endif; ?>
+            <?php if (in_array($user['role'], ['coder', 'owner', 'admin'])): ?>
+            <a href="../admin/troll.php"
+                <?php echo basename($_SERVER['PHP_SELF']) == 'troll.php' ? 'class="active"' : ''; ?>><i
+                    class="fas fa-skull-crossbones"></i> Admin Troll</a>
+            <?php endif; ?>
         </div>
         <a href="logout.php" class="btn logout-btn <?php echo $is_secret_role ? 'secret-role-btn' : ''; ?>"><i
                 class="fas fa-sign-out-alt"></i> Logout</a>

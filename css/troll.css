@@ -1,0 +1,156 @@
+:root {
+    --primary-color: #2c3e50;
+    --secondary-color: #34495e;
+    --accent-color: #e67e22;
+    --light-gray: #ecf0f1;
+    --dark-gray: #7f8c8d;
+    --success-color: #27ae60;
+    --danger-color: #c0392b;
+    --white: #ffffff;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Georgia", serif;
+}
+
+body {
+    background: var(--light-gray);
+    color: var(--secondary-color);
+}
+
+.content-wrapper {
+    max-width: 600px;
+    margin: 20px auto;
+    padding: 20px;
+    background: var(--white);
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.content-wrapper h2 {
+    color: var(--primary-color);
+    font-size: 24px;
+    margin-bottom: 20px;
+    text-align: center;
+    border-bottom: 2px solid var(--light-gray);
+    padding-bottom: 10px;
+}
+
+.alert {
+    padding: 10px;
+    margin-bottom: 15px;
+    border-radius: 5px;
+    text-align: center;
+    font-weight: bold;
+}
+
+.alert-success {
+    background: #d4edda;
+    color: #155724;
+}
+
+.alert-danger {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+}
+
+form label {
+    display: block;
+    margin: 10px 0 5px;
+    color: var(--secondary-color);
+    font-weight: bold;
+}
+
+form select,
+form textarea {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 10px;
+    border: 1px solid var(--dark-gray);
+    border-radius: 5px;
+    font-size: 14px;
+    color: var(--secondary-color);
+    background: var(--white);
+    transition: border-color 0.3s;
+}
+
+form select:focus,
+form textarea:focus {
+    border-color: var(--accent-color);
+    outline: none;
+}
+
+form textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+.btn {
+    background: #007bff;
+    color: var(--white);
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background 0.3s;
+    text-align: center;
+}
+
+.btn:hover {
+    background: #0056b3;
+}
+
+.troll-message {
+    background: #ffeb3b;
+    padding: 10px;
+    border: 2px solid #f57f17;
+    color: #d84315;
+    font-weight: bold;
+    text-align: center;
+    border-radius: 5px;
+}
+
+.troll-theme {
+    background: #000;
+    color: var(--white);
+    padding: 10px;
+    border-radius: 5px;
+}
+
+.troll-message {
+    background: #ffeb3b;
+    padding: 10px;
+    border: 2px solid #f57f17;
+    color: #d84315;
+    font-weight: bold;
+    text-align: center;
+    border-radius: 5px;
+    margin: 10px 0;
+}
+
+@media (max-width: 768px) {
+    .content-wrapper {
+        margin: 10px;
+        padding: 15px;
+    }
+    .content-wrapper h2 {
+        font-size: 20px;
+    }
+    form select,
+    form textarea {
+        font-size: 12px;
+    }
+    .btn {
+        font-size: 14px;
+        padding: 8px 15px;
+    }
+}
